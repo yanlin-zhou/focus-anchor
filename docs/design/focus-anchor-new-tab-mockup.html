@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus Anchor New Tab Mockup</title>
+  <style>
+    :root {
+      --bg: #eef2ef;
+      --surface: #fbfcfa;
+      --raised: #ffffff;
+      --text: #24312d;
+      --muted: #6d7771;
+      --border: #d9dfda;
+      --accent: #0f766e;
+      --accent-soft: #dff3ee;
+      --routine: #8a6a18;
+      --ad-hoc: #a34d2f;
+      --project: #5967a8;
+      --shadow: 0 16px 38px rgba(36, 49, 45, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1480px, calc(100vw - 56px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0 34px;
+    }
+
+    .topbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .mark {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--text);
+      border-radius: 8px;
+      position: relative;
+      background: var(--surface);
+    }
+
+    .mark::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--raised);
+      color: var(--text);
+      min-height: 36px;
+      padding: 0 13px;
+      cursor: default;
+    }
+
+    .button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 650;
+    }
+
+    .summary {
+      margin-top: 36px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 28px;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 840px;
+      font-size: 34px;
+      line-height: 1.15;
+      font-weight: 760;
+    }
+
+    .summary-meta {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+      line-height: 1.7;
+      white-space: nowrap;
+    }
+
+    .focus-lane {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .goal-card {
+      min-height: 376px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--raised);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+
+    .goal-card.primary {
+      border-color: rgba(15, 118, 110, 0.45);
+      background: #f6fbf9;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .rank {
+      font-size: 12px;
+      font-weight: 760;
+      color: var(--accent);
+    }
+
+    .type {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .reason {
+      max-width: 170px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: right;
+    }
+
+    .card-title {
+      margin: 0 0 15px;
+      font-size: 22px;
+      line-height: 1.18;
+      font-weight: 760;
+    }
+
+    .items {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+      min-height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      padding: 8px 9px;
+      font-size: 14px;
+    }
+
+    .checkbox {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #9aa49e;
+      border-radius: 5px;
+      background: #ffffff;
+    }
+
+    .item.done {
+      color: var(--muted);
+      background: #f2f5f2;
+    }
+
+    .item.done .checkbox {
+      border-color: var(--accent);
+      background: var(--accent);
+      position: relative;
+    }
+
+    .item.done .checkbox::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 2px;
+      width: 5px;
+      height: 8px;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      transform: rotate(42deg);
+    }
+
+    .item-source {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 2px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--text);
+      font-size: 13px;
+      min-height: 30px;
+      padding: 5px 9px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quiet {
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .tag-project {
+      color: var(--project);
+    }
+
+    .tag-routine {
+      color: var(--routine);
+    }
+
+    .tag-adhoc {
+      color: var(--ad-hoc);
+    }
+
+    .backlog {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .backlog-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    .mini-card {
+      min-height: 112px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .mini-card h2 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .mini-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .parking {
+      margin-top: 14px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px dashed #c7d0ca;
+      border-radius: 8px;
+      color: var(--muted);
+      padding: 0 14px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1120px) {
+      .page {
+        width: min(100vw - 36px, 980px);
+        padding-top: 20px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-meta {
+        text-align: left;
+      }
+
+      .focus-lane {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .focus-lane .goal-card:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .backlog-strip {
+        display: flex;
+        overflow: hidden;
+      }
+
+      .mini-card {
+        min-width: 190px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <span>Focus Anchor</span>
+      </div>
+      <div class="top-actions">
+        <span>Tue, May 19</span>
+        <button class="button">Settings</button>
+        <button class="button primary">Quick Add</button>
+      </div>
+    </header>
+
+    <section class="summary" aria-label="Today summary">
+      <div>
+        <div class="summary-label">Today should orbit around</div>
+        <h1>Polish the biweekly report before manager review.</h1>
+      </div>
+      <div class="summary-meta">
+        <div>3 focus cards - 2 checks due</div>
+        <div>Snapshot saved at first open</div>
+      </div>
+    </section>
+
+    <section class="focus-lane" aria-label="Focus Lane">
+      <article class="goal-card primary">
+        <div class="card-top">
+          <div>
+            <div class="rank">1 - Focus Lane</div>
+            <div class="type tag-routine">Routine</div>
+          </div>
+          <div class="reason">Review window starts tomorrow.</div>
+        </div>
+        <h2 class="card-title">Biweekly report</h2>
+        <div class="items">
+          <div class="item">
+            <div class="checkbox"></div>
+            <div>Polish narrative and risks section</div>
+            <div class="item-source">routine</div>
+          </div>
+          <div class="item">
+            <div class="checkbox"></div>
+            <div>Check metrics table against dashboard</div>
+            <div class="item-source">check</div>
+          </div>
+          <div class="item done">
+            <div class="checkbox"></div>
+            <div>Collect last sprint highlights</div>
+            <div class="item-source">done</div>
+          </div>
+        </div>
+        <div class="links">
+          <span class="chip">Lark Doc</span>
+          <span class="chip">Metrics</span>
+          <span class="chip">Previous report</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-group">
+            <button class="button primary">Open all</button>
+            <button class="button quiet">Done</button>
+          </div>
+          <div class="footer-group">
+            <button class="button">Pin</button>
+            <button class="button">Snooze</button>
+            <button class="button">Edit</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="goal-card">
+        <div class="card-top">
+          <div>
+            <div class="rank">2 - Focus Lane</div>
+            <div class="type tag-adhoc">Ad Hoc</div>
+          </div>
+          <div class="reason">Needs owner and closure today.</div>
+        </div>
+        <h2 class="card-title">Rollout follow-up</h2>
+        <div class="items">
+          <div class="item">
+            <div class="checkbox"></div>
+            <div>Confirm current impact is closed</div>
+            <div class="item-source">manual</div>
+          </div>
+          <div class="item">
+            <div class="checkbox"></div>
+            <div>Write prevention note for review</div>
+            <div class="item-source">manual</div>
+          </div>
+        </div>
+        <div class="links">
+          <span class="chip">Alert</span>
+          <span class="chip">Dashboard</span>
+          <span class="chip">Thread</span>
+          <span class="chip">Runbook</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-group">
+            <button class="button primary">Open all</button>
+            <button class="button quiet">Done</button>
+          </div>
+          <div class="footer-group">
+            <button class="button">Pin</button>
+            <button class="button">Snooze</button>
+            <button class="button">Edit</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="goal-card">
+        <div class="card-top">
+          <div>
+            <div class="rank">3 - Focus Lane</div>
+            <div class="type tag-project">Project</div>
+          </div>
+          <div class="reason">Moved up manually yesterday.</div>
+        </div>
+        <h2 class="card-title">Focus Anchor MVP</h2>
+        <div class="items">
+          <div class="item">
+            <div class="checkbox"></div>
+            <div>Review frontend design direction</div>
+            <div class="item-source">manual</div>
+          </div>
+          <div class="item">
+            <div class="checkbox"></div>
+            <div>Decide implementation slices</div>
+            <div class="item-source">next</div>
+          </div>
+        </div>
+        <div class="links">
+          <span class="chip">Spec</span>
+          <span class="chip">Repo</span>
+          <span class="chip">Design notes</span>
+        </div>
+        <div class="card-footer">
+          <div class="footer-group">
+            <button class="button primary">Open all</button>
+            <button class="button quiet">Done</button>
+          </div>
+          <div class="footer-group">
+            <button class="button">Pin</button>
+            <button class="button">Snooze</button>
+            <button class="button">Edit</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="backlog" aria-label="Backlog Strip">
+      <div class="section-head">
+        <span>Backlog Strip</span>
+        <span>Drag into Focus Lane to teach priority</span>
+      </div>
+      <div class="backlog-strip">
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-project">Project</span><span>1 item</span></div>
+            <h2>Hiring loop notes</h2>
+          </div>
+          <div class="mini-meta"><span>Due next week</span><span>Open</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-routine">Routine</span><span>0 items</span></div>
+            <h2>Weekly planning</h2>
+          </div>
+          <div class="mini-meta"><span>Returns Friday</span><span>Snoozed</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-project">Project</span><span>2 items</span></div>
+            <h2>Q2 quality work</h2>
+          </div>
+          <div class="mini-meta"><span>No movement 3d</span><span>Open</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-adhoc">Ad Hoc</span><span>1 item</span></div>
+            <h2>Budget question</h2>
+          </div>
+          <div class="mini-meta"><span>Waiting</span><span>Open</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-routine">Routine</span><span>0 items</span></div>
+            <h2>Monthly review</h2>
+          </div>
+          <div class="mini-meta"><span>Not due</span><span>Open</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="parking" aria-label="Parking">
+      <span>Parking / Paused</span>
+      <span>4 cards hidden until their return date</span>
+    </section>
+  </main>
+</body>
+</html>
