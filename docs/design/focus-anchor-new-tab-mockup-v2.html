@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus Anchor New Tab Mockup V2</title>
+  <style>
+    :root {
+      --bg: #f2f0e8;
+      --surface: #fff9ed;
+      --raised: #fffdf7;
+      --panel: #f0d6ad;
+      --text: #26312f;
+      --muted: #6f746c;
+      --border: #ded4c2;
+      --accent: #b85c1f;
+      --accent-dark: #793c15;
+      --accent-soft: #f6d4b6;
+      --complete: #167963;
+      --project: #435f98;
+      --routine: #8c6118;
+      --adhoc: #9d4326;
+      --shadow: 0 18px 42px rgba(81, 55, 30, 0.12);
+      --soft-shadow: 0 10px 26px rgba(81, 55, 30, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Aptos", "IBM Plex Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1480px, calc(100vw - 56px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0 34px;
+    }
+
+    .topbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 780;
+    }
+
+    .mark {
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--text);
+      border-radius: 10px;
+      position: relative;
+      background: var(--raised);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .mark::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      width: 10px;
+      height: 10px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+    }
+
+    .mark::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 18px;
+      width: 2px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--raised);
+      color: var(--text);
+      min-height: 36px;
+      padding: 0 13px;
+      cursor: default;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      box-shadow: 0 1px 0 rgba(45, 38, 31, 0.05);
+      transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--soft-shadow);
+      border-color: #c9b99f;
+    }
+
+    .button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .button.text {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .daily-panel {
+      margin-top: 30px;
+      border: 1px solid #d7bd97;
+      border-radius: 16px;
+      background: var(--panel);
+      box-shadow: var(--soft-shadow);
+      padding: 22px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 28px;
+      animation: enter 260ms ease both;
+    }
+
+    .summary-label {
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 760;
+      margin-bottom: 9px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-family: "Newsreader", "Fraunces", Georgia, serif;
+      font-size: 38px;
+      line-height: 1.12;
+      font-weight: 650;
+    }
+
+    .daily-meta {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+      line-height: 1.7;
+      white-space: nowrap;
+    }
+
+    .focus-lane {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .goal-card {
+      min-height: 382px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--raised);
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--soft-shadow);
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      animation: cardIn 320ms ease both;
+    }
+
+    .goal-card:nth-child(2) {
+      animation-delay: 50ms;
+    }
+
+    .goal-card:nth-child(3) {
+      animation-delay: 100ms;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: #c4ad8b;
+    }
+
+    .goal-card.primary {
+      border-color: rgba(196, 106, 36, 0.42);
+    }
+
+    .card-band {
+      min-height: 70px;
+      padding: 15px 17px 13px;
+      background: #fff0d8;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .goal-card.primary .card-band {
+      background: var(--accent-soft);
+      border-bottom-color: #dea97a;
+    }
+
+    .rank {
+      font-size: 12px;
+      font-weight: 820;
+      color: var(--accent-dark);
+    }
+
+    .type {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 680;
+    }
+
+    .reason {
+      max-width: 178px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: right;
+    }
+
+    .card-body {
+      padding: 17px;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    .card-title {
+      margin: 0 0 15px;
+      font-size: 23px;
+      line-height: 1.18;
+      font-weight: 760;
+    }
+
+    .items {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      padding: 8px 10px;
+      font-size: 14px;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .item:hover {
+      transform: translateX(1px);
+      border-color: #c4ad8b;
+      background: #fff6e7;
+    }
+
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border: 1.7px solid #9d9688;
+      border-radius: 6px;
+      background: #ffffff;
+      transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+
+    .item:hover .checkbox {
+      transform: scale(1.04);
+    }
+
+    .item.done {
+      color: var(--muted);
+      background: #f1e8d8;
+    }
+
+    .item.done .checkbox {
+      border-color: var(--complete);
+      background: var(--complete);
+      position: relative;
+    }
+
+    .item.done .checkbox::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 5px;
+      height: 9px;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      transform: rotate(42deg);
+    }
+
+    .item-source {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 660;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 2px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #fffdf7;
+      color: var(--text);
+      font-size: 13px;
+      min-height: 30px;
+      padding: 5px 9px;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      border-color: #c4ad8b;
+      background: #fff4e3;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag-project {
+      color: var(--project);
+    }
+
+    .tag-routine {
+      color: var(--routine);
+    }
+
+    .tag-adhoc {
+      color: var(--adhoc);
+    }
+
+    .backlog {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      animation: fadeIn 360ms ease 160ms both;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .backlog-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    .mini-card {
+      min-height: 116px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 7px 18px rgba(81, 55, 30, 0.06);
+      transition: transform 140ms ease, border-color 140ms ease;
+    }
+
+    .mini-card:hover {
+      transform: translateY(-1px);
+      border-color: #c4ad8b;
+    }
+
+    .mini-card h2 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .mini-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 620;
+    }
+
+    .parking {
+      margin-top: 14px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px dashed #c2b294;
+      border-radius: 10px;
+      color: var(--muted);
+      background: rgba(255, 250, 241, 0.55);
+      padding: 0 14px;
+      font-size: 13px;
+    }
+
+    @keyframes enter {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .page {
+        width: min(100vw - 36px, 980px);
+        padding-top: 20px;
+      }
+
+      .daily-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .daily-meta {
+        text-align: left;
+      }
+
+      .focus-lane {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .focus-lane .goal-card:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .backlog-strip {
+        display: flex;
+        overflow: hidden;
+      }
+
+      .mini-card {
+        min-width: 190px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        width: calc(100vw - 28px);
+      }
+
+      .topbar {
+        height: auto;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .top-actions span:nth-child(2) {
+        display: none;
+      }
+
+      .daily-panel {
+        margin-top: 26px;
+        padding: 20px 18px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .focus-lane {
+        grid-template-columns: 1fr;
+      }
+
+      .focus-lane .goal-card:last-child {
+        grid-column: auto;
+      }
+
+      .goal-card {
+        min-height: auto;
+      }
+
+      .card-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .footer-group {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <span>Focus Anchor</span>
+      </div>
+      <div class="top-actions">
+        <span>Tue, May 19</span>
+        <span>Snapshot saved</span>
+        <button class="button">Settings</button>
+        <button class="button primary">Quick Add</button>
+      </div>
+    </header>
+
+    <section class="daily-panel" aria-label="Today summary">
+      <div>
+        <div class="summary-label">Today's anchor</div>
+        <h1>Get the report into review-ready shape before the day fills up.</h1>
+      </div>
+      <div class="daily-meta">
+        <div>3 focus cards - 2 checks due</div>
+        <div>Last open: 09:12 - Local only</div>
+      </div>
+    </section>
+
+    <section class="focus-lane" aria-label="Focus Lane">
+      <article class="goal-card primary">
+        <div class="card-band">
+          <div>
+            <div class="rank">1 - Focus Lane</div>
+            <div class="type tag-routine">Routine</div>
+          </div>
+          <div class="reason">Review window starts tomorrow.</div>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">Biweekly report</h2>
+          <div class="items">
+            <div class="item">
+              <div class="checkbox"></div>
+              <div>Polish narrative and risks section</div>
+              <div class="item-source">routine</div>
+            </div>
+            <div class="item">
+              <div class="checkbox"></div>
+              <div>Check metrics table against dashboard</div>
+              <div class="item-source">check</div>
+            </div>
+            <div class="item done">
+              <div class="checkbox"></div>
+              <div>Collect last sprint highlights</div>
+              <div class="item-source">done</div>
+            </div>
+          </div>
+          <div class="links">
+            <span class="chip">Lark Doc</span>
+            <span class="chip">Metrics</span>
+            <span class="chip">Previous report</span>
+          </div>
+          <div class="card-footer">
+            <div class="footer-group">
+              <button class="button primary">Open all</button>
+              <button class="button text">Done</button>
+            </div>
+            <div class="footer-group">
+              <button class="button">Pin</button>
+              <button class="button">Snooze</button>
+              <button class="button">Edit</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="goal-card">
+        <div class="card-band">
+          <div>
+            <div class="rank">2 - Focus Lane</div>
+            <div class="type tag-adhoc">Ad Hoc</div>
+          </div>
+          <div class="reason">Needs owner and closure today.</div>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">Rollout follow-up</h2>
+          <div class="items">
+            <div class="item">
+              <div class="checkbox"></div>
+              <div>Confirm current impact is closed</div>
+              <div class="item-source">manual</div>
+            </div>
+            <div class="item">
+              <div class="checkbox"></div>
+              <div>Write prevention note for review</div>
+              <div class="item-source">manual</div>
+            </div>
+          </div>
+          <div class="links">
+            <span class="chip">Alert</span>
+            <span class="chip">Dashboard</span>
+            <span class="chip">Thread</span>
+            <span class="chip">Runbook</span>
+          </div>
+          <div class="card-footer">
+            <div class="footer-group">
+              <button class="button primary">Open all</button>
+              <button class="button text">Done</button>
+            </div>
+            <div class="footer-group">
+              <button class="button">Pin</button>
+              <button class="button">Snooze</button>
+              <button class="button">Edit</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="goal-card">
+        <div class="card-band">
+          <div>
+            <div class="rank">3 - Focus Lane</div>
+            <div class="type tag-project">Project</div>
+          </div>
+          <div class="reason">Moved up manually yesterday.</div>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">Focus Anchor MVP</h2>
+          <div class="items">
+            <div class="item">
+              <div class="checkbox"></div>
+              <div>Review frontend design direction</div>
+              <div class="item-source">manual</div>
+            </div>
+            <div class="item">
+              <div class="checkbox"></div>
+              <div>Decide implementation slices</div>
+              <div class="item-source">next</div>
+            </div>
+          </div>
+          <div class="links">
+            <span class="chip">Spec</span>
+            <span class="chip">Repo</span>
+            <span class="chip">Design notes</span>
+          </div>
+          <div class="card-footer">
+            <div class="footer-group">
+              <button class="button primary">Open all</button>
+              <button class="button text">Done</button>
+            </div>
+            <div class="footer-group">
+              <button class="button">Pin</button>
+              <button class="button">Snooze</button>
+              <button class="button">Edit</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="backlog" aria-label="Backlog Strip">
+      <div class="section-head">
+        <span>Backlog Strip</span>
+        <span>Drag into Focus Lane to teach priority</span>
+      </div>
+      <div class="backlog-strip">
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-project">Project</span><span>1 item</span></div>
+            <h2>Hiring loop notes</h2>
+          </div>
+          <div class="mini-meta"><span>Due next week</span><span>Open</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-routine">Routine</span><span>0 items</span></div>
+            <h2>Weekly planning</h2>
+          </div>
+          <div class="mini-meta"><span>Returns Friday</span><span>Snoozed</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-project">Project</span><span>2 items</span></div>
+            <h2>Q2 quality work</h2>
+          </div>
+          <div class="mini-meta"><span>No movement 3d</span><span>Open</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-adhoc">Ad Hoc</span><span>1 item</span></div>
+            <h2>Budget question</h2>
+          </div>
+          <div class="mini-meta"><span>Waiting</span><span>Open</span></div>
+        </article>
+        <article class="mini-card">
+          <div>
+            <div class="mini-meta"><span class="tag-routine">Routine</span><span>0 items</span></div>
+            <h2>Monthly review</h2>
+          </div>
+          <div class="mini-meta"><span>Not due</span><span>Open</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="parking" aria-label="Parking">
+      <span>Parking / Paused</span>
+      <span>4 cards hidden until their return date</span>
+    </section>
+  </main>
+</body>
+</html>
