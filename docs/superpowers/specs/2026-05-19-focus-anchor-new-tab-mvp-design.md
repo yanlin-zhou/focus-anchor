@@ -4,7 +4,7 @@
 
 Focus Anchor is a local-first browser New Tab extension for keeping daily attention anchored on the work that matters most.
 
-The first version replaces the browser new tab page with a lightweight focus launcher. It shows prioritized Goal Cards, each representing a meaningful work block such as a quarterly project, recurring responsibility, deadline-driven item, or high-priority ad hoc task. Each card contains today's actionable items and the links needed to enter that work context.
+The first version replaces the browser new tab page with a lightweight focus launcher. It shows the top 3 Today Items first, then prioritized Goal Cards as collapsed work contexts. Goal Cards represent meaningful work blocks such as a quarterly project, recurring responsibility, deadline-driven item, or high-priority ad hoc task.
 
 The product deliberately avoids becoming a full project management tool. Its job is to make the right work visible and easy to start, not to replicate formal project tracking systems.
 
@@ -15,6 +15,7 @@ The product deliberately avoids becoming a full project management tool. Its job
 - Browser extension that replaces the New Tab page.
 - Local-first data storage.
 - Goal Cards for Project, Routine, Ad Hoc, and Deadline work.
+- Top 3 Today Items as the default first action surface.
 - Focus Lane with the top 3 cards.
 - Backlog Strip for lower-priority active cards.
 - Parking or Paused area for cards temporarily out of view.
@@ -184,18 +185,29 @@ The MVP may not expose a full review UI yet. The data should still be recorded f
 
 ## New Tab Layout
 
-The New Tab page uses a Focus Lane plus Backlog Strip layout.
+The New Tab page uses a Top 3 Today Items section, a collapsed Focus Lane, and a collapsed Backlog Strip.
+
+### Top 3 Today Items
+
+- Shows the three highest-priority open Today Items.
+- Appears above the Focus Lane.
+- Each item shows the action, its parent Goal Card, and the reason it is surfaced.
+- This is the default execution surface. It should answer "what should I do next?" without requiring the user to expand any cards.
+- If fewer than three open Today Items exist, show only the real open items and a quiet Quick Add affordance. Do not invent filler items.
 
 ### Focus Lane
 
 - Shows the top 3 active cards.
-- Uses large cards.
+- Uses large but collapsed cards by default.
 - Represents the current attention surface.
-- Cards show title, type, sort reason, Today Items, key links, Open all, pin, snooze, edit, and card completion.
+- Collapsed cards show title, type, sort reason, open item count, link count, and an expand action.
+- Expanded cards show Today Items, key links, Open all, pin, snooze, edit, and card completion.
 
 ### Backlog Strip
 
-- Shows remaining active cards as smaller cards.
+- Is collapsed by default.
+- Shows a compact count and summary of remaining active cards.
+- Can be expanded to show remaining active cards as smaller cards.
 - Lets the user browse lower-priority work without letting it dominate the page.
 - Cards can be dragged into the Focus Lane.
 
@@ -216,9 +228,10 @@ On each New Tab load:
 3. Move paused or not-yet-unsnoozed cards to Parking.
 4. Score active cards.
 5. Produce a short sort reason for each visible card.
-6. Place the top 3 cards into the Focus Lane.
-7. Place the rest into the Backlog Strip.
-8. Record relevant Behavior Events and update the Daily Snapshot.
+6. Derive the top 3 open Today Items from the highest-priority cards and show them above the Focus Lane.
+7. Place the top 3 cards into the collapsed Focus Lane.
+8. Place the rest into the collapsed Backlog Strip.
+9. Record relevant Behavior Events and update the Daily Snapshot.
 
 Rule-based Today Item generation must be idempotent. A routine or date-triggered rule can generate at most one item for the same card, rule, and scheduled date unless the user explicitly creates another item manually.
 
@@ -251,8 +264,9 @@ The system proposes a default attention order. The user remains in control throu
 The user sees:
 
 - A natural-language summary of what the day should orbit around.
-- Focus Lane with 3 large cards.
-- Backlog Strip with smaller cards.
+- Top 3 Today Items as the primary execution surface.
+- Focus Lane with 3 collapsed large cards.
+- Backlog Strip collapsed by default.
 - Parking / Paused collapsed away from the main attention area.
 
 ### Add Goal Card

@@ -8,16 +8,16 @@ Focus Anchor V2 should feel like a warm, capable desk at the start of a hard wor
 
 ### Content Plan
 
-- Primary workspace: New Tab surface with a warm daily header, Focus Lane, Backlog Strip, and Parking.
+- Primary workspace: New Tab surface with a warm daily header, Top 3 Today Items, collapsed Focus Lane, collapsed Backlog, and Parking.
 - Support surface: Add/Edit drawer with friendly controls and compact advanced sections.
 - Detail surface: Expanded Goal Card with links, rules, recent activity, and Today Items.
 - Future surface: review mode using Daily Snapshots, visually quieter than the New Tab.
 
 ### Interaction Thesis
 
-- The page should enter like a workspace coming into focus: summary first, cards second, backlog last.
+- The page should enter like a workspace coming into focus: summary first, top actions second, collapsed context third.
 - Completing a Today Item should feel satisfying: check mark, warm accent fill, slight row settle, and completed line movement.
-- Card clicks should have a subtle press and lift, enough to feel responsive without turning the page into a game.
+- Card expand/collapse should feel calm and intentional, enough to reveal context without stealing attention from the Top 3 list.
 
 ## What Changes From V1
 
@@ -36,6 +36,7 @@ The design should feel lively in a masculine-neutral way: workshop, notebook, st
 
 - Start on the working surface. No marketing hero.
 - Keep the New Tab useful in five seconds.
+- Default to the least amount of information that still tells the user what to do next.
 - Goal Cards remain the only major card type because they are the interaction.
 - Use warmth through material and spacing, not illustration.
 - Avoid pink, lavender, soft floral palettes, glassy gradients, ornamental stickers, and one-note beige/orange themes.
@@ -60,29 +61,47 @@ The design should feel lively in a masculine-neutral way: workshop, notebook, st
    - Small operational facts: focus cards, checks due, last snapshot.
    - No motivational copy.
 
-3. Focus Lane
+3. Top 3 Today Items
+   - The primary default execution surface.
+   - Three compact action rows or tiles.
+   - Each item shows the task, parent Goal Card, and why it is surfaced.
+   - Users can complete items directly from this section.
+   - If fewer than three items exist, show fewer items plus a quiet Quick Add affordance rather than filler.
+
+4. Focus Lane
    - Three large Goal Cards.
-   - Each card has a stronger top band and clearer completion area.
-   - Card body uses Today Items as the dominant content.
+   - Cards are collapsed by default.
+   - Each card shows rank, type, title, sort reason, open item count, link count, and expand.
+   - Expanded state reveals Today Items, links, and card actions.
 
-4. Backlog Strip
-   - Compact horizontal lane.
-   - Smaller cards have enough color and hierarchy to scan quickly.
+5. Backlog Strip
+   - Collapsed by default.
+   - Shows count and a short summary.
+   - Expands only when the user asks to browse lower-priority work.
 
-5. Parking
+6. Parking
    - Muted, collapsed, and visually secondary.
 
 ## Goal Card Anatomy
 
-### Large Card
+### Collapsed Large Card
 
 - Top band with rank, type, and sort reason.
 - Title.
+- Open Today Item count.
+- Link count.
+- Expand action.
+- Optional Open all action if the user already knows they want to enter that context.
+
+The first card may use a warmer highlighted surface, but it must not become an oversized hero card. Its default job is context, not execution.
+
+### Expanded Large Card
+
 - Today Items, max 3 visible.
 - Key link chips.
 - Footer with Open all, Done, Pin, Snooze, and Edit.
 
-The first card may use a warmer highlighted surface, but it must not become an oversized hero card.
+Expansion should happen in place. The page should not navigate away just to inspect a card.
 
 ### Today Item Row
 
@@ -136,7 +155,8 @@ The type should feel human and energetic, not cute.
 - Page padding: 28px desktop.
 - Top bar height: 48px.
 - Header padding: 22px.
-- Header to Focus Lane gap: 18px.
+- Header to Top 3 gap: 16px.
+- Top 3 to Focus Lane gap: 18px.
 - Focus card padding: 18px.
 - Card radius: 10px.
 - Row radius: 7px.
@@ -153,8 +173,9 @@ The type should feel human and energetic, not cute.
 ### Entrance
 
 - Daily Header fades and moves up 6px over 150ms.
-- Focus cards enter with a 50ms stagger.
-- Backlog Strip fades in after the Focus Lane.
+- Top 3 Today Items enter with a 40ms stagger.
+- Collapsed Focus Cards enter after the Top 3 list.
+- Collapsed Backlog fades in last.
 
 ### Click / Press
 

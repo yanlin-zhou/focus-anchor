@@ -188,8 +188,68 @@
       align-items: stretch;
     }
 
+    .top-tasks {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      animation: fadeIn 300ms ease 90ms both;
+    }
+
+    .top-task {
+      min-height: 124px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--raised);
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      box-shadow: var(--soft-shadow);
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .top-task:hover {
+      transform: translateY(-1px);
+      border-color: #c4ad8b;
+      box-shadow: var(--shadow);
+    }
+
+    .task-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .task-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.22;
+      font-weight: 760;
+    }
+
+    .task-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tiny-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--complete);
+      font-weight: 780;
+    }
+
     .goal-card {
-      min-height: 382px;
+      min-height: 188px;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--raised);
@@ -269,6 +329,30 @@
       font-size: 23px;
       line-height: 1.18;
       font-weight: 760;
+    }
+
+    .collapsed-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: auto;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .collapsed-stat {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      padding: 9px;
+    }
+
+    .collapsed-stat strong {
+      display: block;
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1;
+      margin-bottom: 4px;
     }
 
     .items {
@@ -414,6 +498,20 @@
       gap: 10px;
     }
 
+    .backlog-collapsed {
+      min-height: 58px;
+      border: 1px dashed #c2b294;
+      border-radius: 10px;
+      background: rgba(255, 250, 241, 0.65);
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
     .mini-card {
       min-height: 116px;
       border: 1px solid var(--border);
@@ -521,6 +619,10 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .top-tasks {
+        grid-template-columns: 1fr;
+      }
+
       .focus-lane .goal-card:last-child {
         grid-column: 1 / -1;
       }
@@ -569,6 +671,10 @@
         grid-template-columns: 1fr;
       }
 
+      .top-task {
+        min-height: auto;
+      }
+
       .focus-lane .goal-card:last-child {
         grid-column: auto;
       }
@@ -609,9 +715,47 @@
         <h1>Get the report into review-ready shape before the day fills up.</h1>
       </div>
       <div class="daily-meta">
-        <div>3 focus cards - 2 checks due</div>
+        <div>Top 3 ready - Backlog collapsed</div>
         <div>Last open: 09:12 - Local only</div>
       </div>
+    </section>
+
+    <section class="top-tasks" aria-label="Top 3 Today Items">
+      <article class="top-task">
+        <div class="task-meta">
+          <span>1 - Biweekly report</span>
+          <span class="tag-routine">Routine</span>
+        </div>
+        <h2 class="task-title">Polish narrative and risks section</h2>
+        <div class="task-foot">
+          <span>Review window starts tomorrow</span>
+          <span class="tiny-check"><span class="checkbox"></span>Done</span>
+        </div>
+      </article>
+
+      <article class="top-task">
+        <div class="task-meta">
+          <span>2 - Rollout follow-up</span>
+          <span class="tag-adhoc">Ad Hoc</span>
+        </div>
+        <h2 class="task-title">Confirm current impact is closed</h2>
+        <div class="task-foot">
+          <span>Needs owner and closure today</span>
+          <span class="tiny-check"><span class="checkbox"></span>Done</span>
+        </div>
+      </article>
+
+      <article class="top-task">
+        <div class="task-meta">
+          <span>3 - Focus Anchor MVP</span>
+          <span class="tag-project">Project</span>
+        </div>
+        <h2 class="task-title">Review frontend design direction</h2>
+        <div class="task-foot">
+          <span>Moved up manually yesterday</span>
+          <span class="tiny-check"><span class="checkbox"></span>Done</span>
+        </div>
+      </article>
     </section>
 
     <section class="focus-lane" aria-label="Focus Lane">
@@ -625,37 +769,18 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">Biweekly report</h2>
-          <div class="items">
-            <div class="item">
-              <div class="checkbox"></div>
-              <div>Polish narrative and risks section</div>
-              <div class="item-source">routine</div>
-            </div>
-            <div class="item">
-              <div class="checkbox"></div>
-              <div>Check metrics table against dashboard</div>
-              <div class="item-source">check</div>
-            </div>
-            <div class="item done">
-              <div class="checkbox"></div>
-              <div>Collect last sprint highlights</div>
-              <div class="item-source">done</div>
-            </div>
-          </div>
-          <div class="links">
-            <span class="chip">Lark Doc</span>
-            <span class="chip">Metrics</span>
-            <span class="chip">Previous report</span>
+          <div class="collapsed-meta">
+            <div class="collapsed-stat"><strong>2</strong>open items</div>
+            <div class="collapsed-stat"><strong>3</strong>links</div>
           </div>
           <div class="card-footer">
             <div class="footer-group">
-              <button class="button primary">Open all</button>
-              <button class="button text">Done</button>
+              <button class="button primary">Expand</button>
+              <button class="button text">Open all</button>
             </div>
             <div class="footer-group">
               <button class="button">Pin</button>
               <button class="button">Snooze</button>
-              <button class="button">Edit</button>
             </div>
           </div>
         </div>
@@ -671,33 +796,18 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">Rollout follow-up</h2>
-          <div class="items">
-            <div class="item">
-              <div class="checkbox"></div>
-              <div>Confirm current impact is closed</div>
-              <div class="item-source">manual</div>
-            </div>
-            <div class="item">
-              <div class="checkbox"></div>
-              <div>Write prevention note for review</div>
-              <div class="item-source">manual</div>
-            </div>
-          </div>
-          <div class="links">
-            <span class="chip">Alert</span>
-            <span class="chip">Dashboard</span>
-            <span class="chip">Thread</span>
-            <span class="chip">Runbook</span>
+          <div class="collapsed-meta">
+            <div class="collapsed-stat"><strong>2</strong>open items</div>
+            <div class="collapsed-stat"><strong>4</strong>links</div>
           </div>
           <div class="card-footer">
             <div class="footer-group">
-              <button class="button primary">Open all</button>
-              <button class="button text">Done</button>
+              <button class="button primary">Expand</button>
+              <button class="button text">Open all</button>
             </div>
             <div class="footer-group">
               <button class="button">Pin</button>
               <button class="button">Snooze</button>
-              <button class="button">Edit</button>
             </div>
           </div>
         </div>
@@ -713,32 +823,18 @@
         </div>
         <div class="card-body">
           <h2 class="card-title">Focus Anchor MVP</h2>
-          <div class="items">
-            <div class="item">
-              <div class="checkbox"></div>
-              <div>Review frontend design direction</div>
-              <div class="item-source">manual</div>
-            </div>
-            <div class="item">
-              <div class="checkbox"></div>
-              <div>Decide implementation slices</div>
-              <div class="item-source">next</div>
-            </div>
-          </div>
-          <div class="links">
-            <span class="chip">Spec</span>
-            <span class="chip">Repo</span>
-            <span class="chip">Design notes</span>
+          <div class="collapsed-meta">
+            <div class="collapsed-stat"><strong>2</strong>open items</div>
+            <div class="collapsed-stat"><strong>3</strong>links</div>
           </div>
           <div class="card-footer">
             <div class="footer-group">
-              <button class="button primary">Open all</button>
-              <button class="button text">Done</button>
+              <button class="button primary">Expand</button>
+              <button class="button text">Open all</button>
             </div>
             <div class="footer-group">
               <button class="button">Pin</button>
               <button class="button">Snooze</button>
-              <button class="button">Edit</button>
             </div>
           </div>
         </div>
@@ -747,45 +843,12 @@
 
     <section class="backlog" aria-label="Backlog Strip">
       <div class="section-head">
-        <span>Backlog Strip</span>
-        <span>Drag into Focus Lane to teach priority</span>
+        <span>Backlog</span>
+        <span>Collapsed by default</span>
       </div>
-      <div class="backlog-strip">
-        <article class="mini-card">
-          <div>
-            <div class="mini-meta"><span class="tag-project">Project</span><span>1 item</span></div>
-            <h2>Hiring loop notes</h2>
-          </div>
-          <div class="mini-meta"><span>Due next week</span><span>Open</span></div>
-        </article>
-        <article class="mini-card">
-          <div>
-            <div class="mini-meta"><span class="tag-routine">Routine</span><span>0 items</span></div>
-            <h2>Weekly planning</h2>
-          </div>
-          <div class="mini-meta"><span>Returns Friday</span><span>Snoozed</span></div>
-        </article>
-        <article class="mini-card">
-          <div>
-            <div class="mini-meta"><span class="tag-project">Project</span><span>2 items</span></div>
-            <h2>Q2 quality work</h2>
-          </div>
-          <div class="mini-meta"><span>No movement 3d</span><span>Open</span></div>
-        </article>
-        <article class="mini-card">
-          <div>
-            <div class="mini-meta"><span class="tag-adhoc">Ad Hoc</span><span>1 item</span></div>
-            <h2>Budget question</h2>
-          </div>
-          <div class="mini-meta"><span>Waiting</span><span>Open</span></div>
-        </article>
-        <article class="mini-card">
-          <div>
-            <div class="mini-meta"><span class="tag-routine">Routine</span><span>0 items</span></div>
-            <h2>Monthly review</h2>
-          </div>
-          <div class="mini-meta"><span>Not due</span><span>Open</span></div>
-        </article>
+      <div class="backlog-collapsed">
+        <span>5 lower-priority cards hidden to keep the page quiet.</span>
+        <button class="button">Show backlog</button>
       </div>
     </section>
 
