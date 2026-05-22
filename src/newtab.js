@@ -65,6 +65,7 @@ app.addEventListener("click", async (event) => {
 
   if (action === "open-all") {
     const card = appData.goalCards.find((entry) => entry.id === target.dataset.cardId);
+    if (!card) return;
     for (const link of card.links.filter((entry) => entry.includeInOpenAll)) {
       chrome.tabs.create({ url: link.url, active: false });
     }
@@ -93,11 +94,12 @@ function completedIdsForToday(data, todayKey) {
 function showCompletionReward(button) {
   const task = button.closest(".top-task");
   button.classList.add("completed");
-  task.classList.add("is-completing");
+  task?.classList.add("is-completing");
   window.setTimeout(() => {
-    task.classList.remove("is-completing");
-    task.classList.add("is-complete");
+    task?.classList.remove("is-completing");
+    task?.classList.add("is-complete");
   }, 520);
+  if (!toast) return;
   toast.textContent = "Task closed. One less thing pulling on your day.";
   toast.classList.remove("show");
   void toast.offsetWidth;

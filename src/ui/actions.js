@@ -2,10 +2,13 @@ import { createBehaviorEvent } from "../domain/events.js";
 
 export function completeTodayItem(data, itemId, nowIso) {
   let changedCardId = null;
+  let beforeStatus = null;
   const goalCards = data.goalCards.map((card) => {
     const todayItems = card.todayItems.map((item) => {
       if (item.id !== itemId) return item;
+      if (item.status === "done") return item;
       changedCardId = card.id;
+      beforeStatus = item.status;
       return { ...item, status: "done", doneAt: nowIso, updatedAt: nowIso };
     });
     return changedCardId === card.id ? { ...card, todayItems, updatedAt: nowIso } : card;
@@ -22,7 +25,7 @@ export function completeTodayItem(data, itemId, nowIso) {
       createBehaviorEvent("today_item_completed", nowIso, {
         goalCardId: changedCardId,
         todayItemId: itemId,
-        before: { status: "open" },
+        before: { status: beforeStatus },
         after: { status: "done" }
       })
     ]
