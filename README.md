@@ -6,6 +6,12 @@ Stay anchored on what matters most.
 
 Focus Anchor is a local-first Chrome New Tab extension. It shows the top 3 things to do today, keeps larger work contexts collapsed by default, and stores data locally.
 
+## Install and Usage
+
+For clear installation, first-run configuration, daily usage, data reset, and troubleshooting steps, read:
+
+- [Focus Anchor 安装和使用指南](docs/install-and-usage.md)
+
 ## Development
 
 Run tests:
