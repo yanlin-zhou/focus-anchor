@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Anchor",
+  "description": "Stay anchored on what matters most.",
+  "version": "0.1.0",
+  "permissions": ["storage", "tabs"],
+  "chrome_url_overrides": {
+    "newtab": "src/newtab.html"
+  }
+}
