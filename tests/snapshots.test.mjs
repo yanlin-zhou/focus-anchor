@@ -80,6 +80,29 @@ test("daily snapshot filters behavior events by local date", async () => {
   assert.deepEqual(withSnapshot.dailySnapshots[0].behaviorEventIds, [todayLocalEvent.id]);
 });
 
+test("daily snapshot records only currently active snoozes", async () => {
+  const data = createInitialData("2026-05-24T09:12:00.000Z");
+  const snoozedData = {
+    ...data,
+    goalCards: data.goalCards.map((card) => {
+      if (card.id === "card-biweekly-report") return { ...card, snoozedUntil: "2026-05-23" };
+      if (card.id === "card-focus-anchor-mvp") return { ...card, snoozedUntil: "2026-05-25" };
+      return card;
+    })
+  };
+  const model = buildHomeModel(snoozedData, "2026-05-24");
+
+  const withSnapshot = upsertDailySnapshot(snoozedData, "2026-05-24", model, []);
+
+  assert.deepEqual(withSnapshot.dailySnapshots[0].snoozedCardIds, ["card-focus-anchor-mvp"]);
+});
+
+test("next local date handles daylight-saving fall-back days", async () => {
+  const { nextLocalDateKey } = await import("../src/domain/date.js");
+
+  assert.equal(nextLocalDateKey("2026-11-01T07:30:00.000Z"), "2026-11-02");
+});
+
 test("memory repository saves and loads data", async () => {
   const repo = createMemoryRepository();
   const data = createInitialData("2026-05-22T09:12:00.000Z");

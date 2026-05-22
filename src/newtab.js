@@ -1,5 +1,5 @@
 import { createInitialData } from "./domain/sampleData.js";
-import { toLocalDateKey } from "./domain/date.js";
+import { nextLocalDateKey, toLocalDateKey } from "./domain/date.js";
 import { generateDueTodayItems } from "./domain/rules.js";
 import { buildHomeModel } from "./domain/ranking.js";
 import { upsertDailySnapshot } from "./domain/snapshots.js";
@@ -56,8 +56,7 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "snooze-card") {
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    appData = snoozeCard(appData, target.dataset.cardId, toLocalDateKey(tomorrow), nowIso);
+    appData = snoozeCard(appData, target.dataset.cardId, nextLocalDateKey(nowIso), nowIso);
     await repo.save(appData);
     await refresh();
     return;

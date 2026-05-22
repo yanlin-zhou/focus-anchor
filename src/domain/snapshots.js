@@ -25,7 +25,7 @@ export function upsertDailySnapshot(data, dateKey, homeModel, completedTodayItem
         manualTodayItemIds,
         completedTodayItemIds,
         skippedTodayItemIds: collectSkipped(data, dateKey),
-        snoozedCardIds: collectSnoozed(data),
+        snoozedCardIds: collectSnoozed(data, dateKey),
         behaviorEventIds
       }
     : {
@@ -38,7 +38,7 @@ export function upsertDailySnapshot(data, dateKey, homeModel, completedTodayItem
         manualTodayItemIds,
         completedTodayItemIds,
         skippedTodayItemIds: collectSkipped(data, dateKey),
-        snoozedCardIds: collectSnoozed(data),
+        snoozedCardIds: collectSnoozed(data, dateKey),
         behaviorEventIds,
         optionalReflection: ""
       };
@@ -60,6 +60,6 @@ function collectSkipped(data, dateKey) {
   );
 }
 
-function collectSnoozed(data) {
-  return data.goalCards.filter((card) => card.snoozedUntil).map((card) => card.id);
+function collectSnoozed(data, dateKey) {
+  return data.goalCards.filter((card) => card.snoozedUntil && card.snoozedUntil > dateKey).map((card) => card.id);
 }

@@ -8,6 +8,12 @@ export function toLocalDateKey(dateInput) {
   return `${year}-${month}-${day}`;
 }
 
+export function nextLocalDateKey(dateInput) {
+  const date = new Date(dateInput);
+  date.setDate(date.getDate() + 1);
+  return toLocalDateKey(date);
+}
+
 export function weekdayForDateKey(dateKey) {
   return new Date(`${dateKey}T00:00:00`).getDay();
 }
