@@ -15,6 +15,20 @@ test("view model keeps Top 3 as the first execution surface", () => {
   assert.equal(viewModel.backlog.collapsed, true);
 });
 
+test("view model applies local expansion state without changing the ranking model", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
+  const expandedId = homeModel.focusCards[0].id;
+  const viewModel = toViewModel(homeModel, "2026-05-22T09:12:00.000Z", {
+    expandedCardIds: new Set([expandedId]),
+    backlogExpanded: true
+  });
+
+  assert.equal(viewModel.focusCards[0].expanded, true);
+  assert.equal(viewModel.focusCards[1].expanded, false);
+  assert.equal(viewModel.backlog.collapsed, false);
+  assert.equal(homeModel.focusCards[0].expanded, false);
+});
+
 test("rendered html includes collapsed cards and a collapsed backlog", () => {
   const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
   const html = renderAppHtml(toViewModel(homeModel, "2026-05-22T09:12:00.000Z"));
@@ -22,6 +36,21 @@ test("rendered html includes collapsed cards and a collapsed backlog", () => {
   assert.match(html, /Top 3 Today Items/);
   assert.match(html, /Show backlog/);
   assert.match(html, /Expand/);
+});
+
+test("rendered html shows expanded card details and expanded backlog on demand", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
+  const expandedId = homeModel.focusCards[0].id;
+  const viewModel = toViewModel(homeModel, "2026-05-22T09:12:00.000Z", {
+    expandedCardIds: new Set([expandedId]),
+    backlogExpanded: true
+  });
+  const html = renderAppHtml(viewModel);
+
+  assert.match(html, /data-card-expanded="true"/);
+  assert.match(html, /Card links/);
+  assert.match(html, /Hide backlog/);
+  assert.match(html, /backlog-expanded/);
 });
 
 test("rendered html includes dynamic task and card actions", () => {

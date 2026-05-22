@@ -5,7 +5,6 @@ export function renderAppHtml(viewModel) {
       <div class="top-actions">
         <span>${escapeHtml(viewModel.dateLabel)}</span>
         <span>Snapshot saved</span>
-        <button class="button" data-action="settings">Settings</button>
         <button class="button primary" data-action="quick-add">Quick Add</button>
       </div>
     </header>
@@ -26,11 +25,8 @@ export function renderAppHtml(viewModel) {
       ${viewModel.focusCards.map(renderFocusCard).join("")}
     </section>
     <section class="backlog" aria-label="Backlog Strip">
-      <div class="section-head"><span>Backlog</span><span>Collapsed by default</span></div>
-      <div class="backlog-collapsed">
-        <span>${viewModel.backlog.count} lower-priority cards hidden to keep the page quiet.</span>
-        <button class="button" data-action="show-backlog">Show backlog</button>
-      </div>
+      <div class="section-head"><span>Backlog</span><span>${viewModel.backlog.collapsed ? "Collapsed by default" : "Visible for review"}</span></div>
+      ${viewModel.backlog.collapsed ? renderCollapsedBacklog(viewModel.backlog) : renderExpandedBacklog(viewModel.backlog)}
     </section>
     <section class="parking" aria-label="Parking">
       <span>Parking / Paused</span>
@@ -61,7 +57,7 @@ function renderTopTask(task) {
 
 function renderFocusCard(card) {
   return `
-    <article class="goal-card ${card.pinned ? "primary" : ""}" data-card-id="${escapeHtml(card.id)}">
+    <article class="goal-card ${card.pinned ? "primary" : ""} ${card.expanded ? "is-expanded" : ""}" data-card-id="${escapeHtml(card.id)}" data-card-expanded="${card.expanded ? "true" : "false"}">
       <div class="card-band">
         <div><div class="rank">${escapeHtml(card.title)}</div><div class="type tag-${classNameForType(card.type)}">${escapeHtml(labelForType(card.type))}</div></div>
         <div class="reason">${escapeHtml(card.sortReason)}</div>
@@ -72,9 +68,10 @@ function renderFocusCard(card) {
           <div class="collapsed-stat"><strong>${card.openItemCount}</strong>open items</div>
           <div class="collapsed-stat"><strong>${card.linkCount}</strong>links</div>
         </div>
+        ${card.expanded ? renderExpandedCard(card) : ""}
         <div class="card-footer">
           <div class="footer-group">
-            <button class="button primary" data-action="expand-card" data-card-id="${escapeHtml(card.id)}">Expand</button>
+            <button class="button primary" data-action="expand-card" data-card-id="${escapeHtml(card.id)}">${card.expanded ? "Collapse" : "Expand"}</button>
             <button class="button text" data-action="open-all" data-card-id="${escapeHtml(card.id)}">Open all</button>
           </div>
           <div class="footer-group">
@@ -82,6 +79,72 @@ function renderFocusCard(card) {
             <button class="button" data-action="snooze-card" data-card-id="${escapeHtml(card.id)}">Snooze</button>
           </div>
         </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderExpandedCard(card) {
+  return `
+    <div class="card-expanded">
+      <div class="expanded-section">
+        <div class="expanded-label">Today items</div>
+        <div class="items">
+          ${card.items.length > 0 ? card.items.map(renderCardItem).join("") : `<div class="empty-line">No open item for today.</div>`}
+        </div>
+      </div>
+      <div class="expanded-section">
+        <div class="expanded-label">Card links</div>
+        <div class="links">
+          ${card.links.length > 0 ? card.links.map(renderCardLink).join("") : `<span class="empty-line">No links saved yet.</span>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCardItem(item) {
+  return `
+    <div class="item">
+      <span class="checkbox" aria-hidden="true"></span>
+      <span>${escapeHtml(item.title)}</span>
+      <span class="item-source">${escapeHtml(labelForSource(item.source))}</span>
+    </div>
+  `;
+}
+
+function renderCardLink(link) {
+  return `<a class="chip" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>`;
+}
+
+function renderCollapsedBacklog(backlog) {
+  return `
+    <div class="backlog-collapsed">
+      <span>${backlog.count} lower-priority cards hidden to keep the page quiet.</span>
+      <button class="button" data-action="show-backlog">Show backlog</button>
+    </div>
+  `;
+}
+
+function renderExpandedBacklog(backlog) {
+  return `
+    <div class="backlog-collapsed">
+      <span>${backlog.count} lower-priority cards available.</span>
+      <button class="button" data-action="show-backlog">Hide backlog</button>
+    </div>
+    <div class="backlog-expanded">
+      ${backlog.cards.length > 0 ? backlog.cards.map(renderBacklogCard).join("") : `<div class="empty-line">No backlog cards.</div>`}
+    </div>
+  `;
+}
+
+function renderBacklogCard(card) {
+  return `
+    <article class="mini-card">
+      <h2>${escapeHtml(card.title)}</h2>
+      <div class="mini-meta">
+        <span class="tag-${classNameForType(card.type)}">${escapeHtml(labelForType(card.type))}</span>
+        <span>${card.openItemCount} items</span>
       </div>
     </article>
   `;
@@ -97,6 +160,10 @@ function labelForType(type) {
 
 function classNameForType(type) {
   return ({ project: "project", routine: "routine", ad_hoc: "adhoc", deadline: "deadline" })[type] ?? "project";
+}
+
+function labelForSource(source) {
+  return ({ routine: "Routine", manual: "Manual", date_triggered: "Date" })[source] ?? "Item";
 }
 
 function escapeHtml(value) {

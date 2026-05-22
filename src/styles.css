@@ -326,6 +326,10 @@ h1 {
   border-color: rgba(196, 106, 36, 0.42);
 }
 
+.goal-card.is-expanded {
+  border-color: rgba(196, 106, 36, 0.32);
+}
+
 .card-band {
   min-height: 70px;
   padding: 15px 17px 13px;
@@ -401,10 +405,27 @@ h1 {
   margin-bottom: 4px;
 }
 
+.card-expanded {
+  display: grid;
+  gap: 13px;
+  margin-top: 14px;
+  animation: fadeIn 180ms ease both;
+}
+
+.expanded-section {
+  display: grid;
+  gap: 8px;
+}
+
+.expanded-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 780;
+}
+
 .items {
   display: grid;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
 .item {
@@ -503,11 +524,11 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: auto;
   padding-top: 2px;
 }
 
 .chip {
+  text-decoration: none;
   border: 1px solid var(--border);
   border-radius: 7px;
   background: #fffdf7;
@@ -516,6 +537,11 @@ h1 {
   min-height: 30px;
   padding: 5px 9px;
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.empty-line {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .chip:hover {
@@ -590,6 +616,14 @@ h1 {
   gap: 18px;
   color: var(--muted);
   font-size: 13px;
+}
+
+.backlog-expanded {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  animation: fadeIn 180ms ease both;
 }
 
 .mini-card {
@@ -763,7 +797,8 @@ h1 {
     grid-column: 1 / -1;
   }
 
-  .backlog-strip {
+  .backlog-strip,
+  .backlog-expanded {
     display: flex;
     overflow: hidden;
   }

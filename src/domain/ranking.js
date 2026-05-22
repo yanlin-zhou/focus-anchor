@@ -14,12 +14,12 @@ export function buildHomeModel(data, todayKey) {
     })
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
 
-  const focusCards = scored.slice(0, 3).map(toCollapsedCard);
-  const backlogCards = scored.slice(3).map(toCollapsedCard);
+  const focusCards = scored.slice(0, 3).map((card) => toCollapsedCard(card, todayKey));
+  const backlogCards = scored.slice(3).map((card) => toCollapsedCard(card, todayKey));
   const topTodayItems = deriveTopTodayItems(scored, todayKey);
   const parkingCards = data.goalCards
     .filter((card) => card.status === "paused" || isSnoozed(card, todayKey))
-    .map((card) => toCollapsedCard({ ...card, sortReason: parkingReasonFor(card, todayKey) }));
+    .map((card) => toCollapsedCard({ ...card, sortReason: parkingReasonFor(card, todayKey) }, todayKey));
 
   return {
     date: todayKey,
@@ -57,7 +57,7 @@ function deriveTopTodayItems(cards, todayKey) {
     .slice(0, 3);
 }
 
-function toCollapsedCard(card) {
+function toCollapsedCard(card, todayKey) {
   return {
     id: card.id,
     title: card.title,
@@ -65,6 +65,20 @@ function toCollapsedCard(card) {
     sortReason: card.sortReason,
     openItemCount: card.todayItems.filter((item) => item.status === "open").length,
     linkCount: card.links.length,
+    items: openItemsForToday(card, todayKey)
+      .map((item) => ({
+        id: item.id,
+        title: item.title,
+        source: item.source,
+        scheduledFor: item.scheduledFor
+      })),
+    links: card.links.map((link) => ({
+      id: link.id,
+      label: link.label,
+      url: link.url,
+      kind: link.kind,
+      includeInOpenAll: link.includeInOpenAll
+    })),
     expanded: false,
     pinned: card.pinned
   };

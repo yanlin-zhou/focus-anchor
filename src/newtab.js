@@ -11,6 +11,10 @@ import { addTodayItem, completeTodayItem, pinCard, snoozeCard } from "./ui/actio
 const app = document.querySelector("#app");
 const toast = document.querySelector("#completion-toast");
 const repo = createChromeRepository();
+const uiState = {
+  expandedCardIds: new Set(),
+  backlogExpanded: false
+};
 let appData = await repo.load();
 
 if (!appData) {
@@ -56,8 +60,21 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "snooze-card") {
+    uiState.expandedCardIds.delete(target.dataset.cardId);
     appData = snoozeCard(appData, target.dataset.cardId, nextLocalDateKey(nowIso), nowIso);
     await repo.save(appData);
+    await refresh();
+    return;
+  }
+
+  if (action === "expand-card") {
+    toggleExpandedCard(target.dataset.cardId);
+    await refresh();
+    return;
+  }
+
+  if (action === "show-backlog") {
+    uiState.backlogExpanded = !uiState.backlogExpanded;
     await refresh();
     return;
   }
@@ -79,7 +96,7 @@ async function refresh() {
   const homeModel = buildHomeModel(appData, todayKey);
   appData = upsertDailySnapshot(appData, todayKey, homeModel, completedIdsForToday(appData, todayKey));
   await repo.save(appData);
-  mountApp(app, toViewModel(homeModel, nowIso));
+  mountApp(app, toViewModel(homeModel, nowIso, uiState));
 }
 
 function completedIdsForToday(data, todayKey) {
@@ -103,4 +120,13 @@ function showCompletionReward(button) {
   toast.classList.remove("show");
   void toast.offsetWidth;
   toast.classList.add("show");
+}
+
+function toggleExpandedCard(cardId) {
+  if (!cardId) return;
+  if (uiState.expandedCardIds.has(cardId)) {
+    uiState.expandedCardIds.delete(cardId);
+    return;
+  }
+  uiState.expandedCardIds.add(cardId);
 }
