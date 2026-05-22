@@ -1,7 +1,9 @@
+import { toLocalDateKey } from "./date.js";
+
 export function upsertDailySnapshot(data, dateKey, homeModel, completedTodayItemIds = []) {
   const existing = data.dailySnapshots.find((snapshot) => snapshot.date === dateKey);
   const behaviorEventIds = data.behaviorEvents
-    .filter((event) => event.timestamp.slice(0, 10) === dateKey)
+    .filter((event) => toLocalDateKey(event.timestamp) === dateKey)
     .map((event) => event.id);
   const generatedTodayItemIds = data.goalCards.flatMap((card) =>
     card.todayItems

@@ -60,6 +60,26 @@ test("daily snapshot includes only behavior events from the same date", async ()
   assert.deepEqual(withSnapshot.dailySnapshots[0].behaviorEventIds, [todayEvent.id]);
 });
 
+test("daily snapshot filters behavior events by local date", async () => {
+  const data = createInitialData("2026-05-22T09:12:00.000Z");
+  const model = buildHomeModel(data, "2026-05-22");
+  const priorLocalDayEvent = createBehaviorEvent("today_item_completed", "2026-05-22T06:30:00.000Z", {
+    todayItemId: "item-too-early-local"
+  });
+  const todayLocalEvent = createBehaviorEvent("today_item_completed", "2026-05-22T16:00:00.000Z", {
+    todayItemId: "item-report-polish"
+  });
+
+  const withSnapshot = upsertDailySnapshot(
+    { ...data, behaviorEvents: [priorLocalDayEvent, todayLocalEvent] },
+    "2026-05-22",
+    model,
+    []
+  );
+
+  assert.deepEqual(withSnapshot.dailySnapshots[0].behaviorEventIds, [todayLocalEvent.id]);
+});
+
 test("memory repository saves and loads data", async () => {
   const repo = createMemoryRepository();
   const data = createInitialData("2026-05-22T09:12:00.000Z");
@@ -81,6 +101,28 @@ test("memory repository isolates loaded data until save", async () => {
   const reloaded = await repo.load();
 
   assert.equal(reloaded.goalCards[0].title, data.goalCards[0].title);
+});
+
+test("memory repository isolates saved input from later mutation", async () => {
+  const repo = createMemoryRepository();
+  const data = createInitialData("2026-05-22T09:12:00.000Z");
+
+  await repo.save(data);
+  data.goalCards[0].title = "Mutated after save";
+  const loaded = await repo.load();
+
+  assert.notEqual(loaded.goalCards[0].title, data.goalCards[0].title);
+});
+
+test("memory repository isolates save return value from stored state", async () => {
+  const repo = createMemoryRepository();
+  const data = createInitialData("2026-05-22T09:12:00.000Z");
+
+  const saved = await repo.save(data);
+  saved.goalCards[0].title = "Mutated save return value";
+  const loaded = await repo.load();
+
+  assert.notEqual(loaded.goalCards[0].title, saved.goalCards[0].title);
 });
 
 test("memory repository clones initial data", async () => {
