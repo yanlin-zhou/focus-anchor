@@ -48,7 +48,7 @@ function renderTopTask(task) {
     <article class="top-task" data-task-id="${escapeHtml(task.id)}" data-card-id="${escapeHtml(task.goalCardId)}">
       <div class="task-meta">
         <span>${escapeHtml(task.goalTitle)}</span>
-        <span class="tag-${classNameForType(task.goalType)}">${labelForType(task.goalType)}</span>
+        <span class="tag-${classNameForType(task.goalType)}">${escapeHtml(labelForType(task.goalType))}</span>
       </div>
       <h2 class="task-title">${escapeHtml(task.title)}</h2>
       <div class="task-foot">
@@ -63,7 +63,7 @@ function renderFocusCard(card) {
   return `
     <article class="goal-card ${card.pinned ? "primary" : ""}" data-card-id="${escapeHtml(card.id)}">
       <div class="card-band">
-        <div><div class="rank">${escapeHtml(card.title)}</div><div class="type tag-${classNameForType(card.type)}">${labelForType(card.type)}</div></div>
+        <div><div class="rank">${escapeHtml(card.title)}</div><div class="type tag-${classNameForType(card.type)}">${escapeHtml(labelForType(card.type))}</div></div>
         <div class="reason">${escapeHtml(card.sortReason)}</div>
       </div>
       <div class="card-body">
