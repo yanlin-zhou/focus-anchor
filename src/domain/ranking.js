@@ -17,7 +17,9 @@ export function buildHomeModel(data, todayKey) {
   const focusCards = scored.slice(0, 3).map(toCollapsedCard);
   const backlogCards = scored.slice(3).map(toCollapsedCard);
   const topTodayItems = deriveTopTodayItems(scored, todayKey);
-  const parkingCards = data.goalCards.filter((card) => card.status === "paused" || isSnoozed(card, todayKey)).map(toCollapsedCard);
+  const parkingCards = data.goalCards
+    .filter((card) => card.status === "paused" || isSnoozed(card, todayKey))
+    .map((card) => toCollapsedCard({ ...card, sortReason: parkingReasonFor(card, todayKey) }));
 
   return {
     date: todayKey,
@@ -48,7 +50,7 @@ function deriveTopTodayItems(cards, todayKey) {
       goalTitle: card.title,
       goalType: card.type,
       title: item.title,
-      reason: reasonFor(card, todayKey),
+      reason: card.sortReason,
       score: card.score
     })))
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
@@ -77,12 +79,29 @@ function isSnoozed(card, todayKey) {
 }
 
 function reasonFor(card, todayKey) {
-  if (card.pinned) return "Pinned to the front.";
-  if (card.todayItems.some((item) => item.source === "date_triggered" && item.scheduledFor === todayKey && item.status === "open")) return "Today has a delivery check.";
+  const parts = [];
+  const openTodayCount = openItemsForToday(card, todayKey).length;
+
+  if (card.pinned) parts.push("Pinned to the front.");
+  if (hasDateTriggeredToday(card, todayKey)) parts.push("Date-triggered item today.");
+  if (Number(card.importance ?? 0) >= 4) parts.push("High importance.");
+  if (openTodayCount > 0) parts.push(`${openTodayCount} open ${openTodayCount === 1 ? "item" : "items"} ready today.`);
+
+  if (parts.length > 0) return parts.join(" ");
   if (card.type === "routine") return "Routine work is in its active window.";
   if (card.type === "ad_hoc") return "Needs owner and closure today.";
   if (card.type === "project") return "Important project work is ready to move.";
   return "Deadline work needs attention.";
+}
+
+function hasDateTriggeredToday(card, todayKey) {
+  return card.todayItems.some((item) => item.source === "date_triggered" && item.scheduledFor === todayKey && item.status === "open");
+}
+
+function parkingReasonFor(card, todayKey) {
+  if (isSnoozed(card, todayKey)) return `Snoozed until ${card.snoozedUntil}.`;
+  if (card.status === "paused") return "Paused and parked outside today's focus.";
+  return reasonFor(card, todayKey);
 }
 
 function summaryFor(topTodayItems, focusCards) {
