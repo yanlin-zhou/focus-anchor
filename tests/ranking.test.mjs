@@ -51,12 +51,12 @@ test("pinned cards outrank unpinned cards", () => {
 
 test("top today items exclude done and future scheduled items", () => {
   const data = createInitialData("2026-05-22T09:12:00.000Z");
-  const rollout = data.goalCards.find((card) => card.id === "card-rollout-follow-up");
-  rollout.todayItems.push(
+  const report = data.goalCards.find((card) => card.id === "card-biweekly-report");
+  report.todayItems.push(
     {
-      id: "item-rollout-done",
-      goalCardId: "card-rollout-follow-up",
-      title: "Already closed rollout note",
+      id: "item-report-done",
+      goalCardId: "card-biweekly-report",
+      title: "AAA already closed report note",
       status: "done",
       source: "manual",
       scheduledFor: "2026-05-22",
@@ -67,9 +67,9 @@ test("top today items exclude done and future scheduled items", () => {
       updatedAt: "2026-05-22T09:20:00.000Z"
     },
     {
-      id: "item-rollout-future",
-      goalCardId: "card-rollout-follow-up",
-      title: "Future rollout follow-up",
+      id: "item-report-future",
+      goalCardId: "card-biweekly-report",
+      title: "AAA future report follow-up",
       status: "open",
       source: "manual",
       scheduledFor: "2026-05-23",
@@ -84,8 +84,13 @@ test("top today items exclude done and future scheduled items", () => {
   const model = buildHomeModel(data, "2026-05-22");
   const topIds = model.topTodayItems.map((item) => item.id);
 
-  assert.equal(topIds.includes("item-rollout-done"), false);
-  assert.equal(topIds.includes("item-rollout-future"), false);
+  assert.deepEqual(topIds, [
+    "item-report-metrics-check",
+    "item-report-polish",
+    "item-rollout-impact"
+  ]);
+  assert.equal(topIds.includes("item-report-done"), false);
+  assert.equal(topIds.includes("item-report-future"), false);
 });
 
 test("snoozed active cards move out of focus and backlog into parking", () => {
