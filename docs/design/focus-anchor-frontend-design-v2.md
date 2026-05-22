@@ -185,9 +185,12 @@ The type should feel human and energetic, not cute.
 
 ### Completion
 
-- Checkbox fills with completion green.
-- Row background warms briefly, then settles into muted completed state.
-- A tiny "Done" label can fade in for 600ms, then disappear.
+- Completion uses a three-part sequence: confirm, reward, settle.
+- Confirm: checkbox draws the check mark and the control compresses for 120ms.
+- Reward: the task surface gets a warm amber pulse and a compact confirmation message appears for 900ms.
+- Settle: the task becomes a muted completed state and can later move to a completed row or out of the Top 3 list.
+- Do not use full-screen confetti, sound, large celebratory copy, or layout jumps.
+- The motion should feel earned and tactile, not cute.
 
 ### Reorder
 

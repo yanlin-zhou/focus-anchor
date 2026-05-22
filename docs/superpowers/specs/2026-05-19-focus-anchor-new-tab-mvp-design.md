@@ -302,6 +302,7 @@ The `Open all` action opens all links on that card where `includeInOpenAll = tru
 ### Complete Work
 
 - Completing a Today Item means today's step is finished.
+- Completing a Today Item should trigger a short completion reward: check mark draw, brief warm pulse, compact confirmation message, then a settled completed state.
 - Completing a Goal Card means the full work block is done and should be archived.
 
 ### Pin, Snooze, and Drag

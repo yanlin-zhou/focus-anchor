@@ -142,6 +142,13 @@
       box-shadow: none;
     }
 
+    .complete-action {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      cursor: default;
+    }
+
     .daily-panel {
       margin-top: 30px;
       border: 1px solid #d7bd97;
@@ -207,12 +214,48 @@
       gap: 10px;
       box-shadow: var(--soft-shadow);
       transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+      position: relative;
+      overflow: hidden;
     }
 
     .top-task:hover {
       transform: translateY(-1px);
       border-color: #c4ad8b;
       box-shadow: var(--shadow);
+    }
+
+    .top-task.is-completing {
+      animation: taskReward 620ms ease both;
+      border-color: rgba(184, 92, 31, 0.5);
+    }
+
+    .top-task.is-complete {
+      background: #f3eadc;
+      border-color: rgba(22, 121, 99, 0.4);
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .top-task.is-complete .task-title {
+      color: var(--muted);
+    }
+
+    .top-task.is-complete .task-meta span:last-child {
+      visibility: hidden;
+    }
+
+    .top-task.is-complete::after {
+      content: "Closed";
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      border-radius: 999px;
+      background: rgba(22, 121, 99, 0.12);
+      color: var(--complete);
+      font-size: 12px;
+      font-weight: 820;
+      padding: 4px 8px;
+      animation: doneBadge 700ms ease both;
     }
 
     .task-meta {
@@ -246,6 +289,15 @@
       gap: 7px;
       color: var(--complete);
       font-weight: 780;
+      transition: transform 140ms ease, color 140ms ease;
+    }
+
+    .complete-action:active .tiny-check {
+      transform: scale(0.96);
+    }
+
+    .complete-action.completed .tiny-check {
+      color: var(--complete);
     }
 
     .goal-card {
@@ -388,6 +440,7 @@
       border-radius: 6px;
       background: #ffffff;
       transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+      position: relative;
     }
 
     .item:hover .checkbox {
@@ -402,10 +455,10 @@
     .item.done .checkbox {
       border-color: var(--complete);
       background: var(--complete);
-      position: relative;
     }
 
-    .item.done .checkbox::after {
+    .item.done .checkbox::after,
+    .complete-action.completed .checkbox::after {
       content: "";
       position: absolute;
       left: 5px;
@@ -415,6 +468,35 @@
       border-right: 2px solid #ffffff;
       border-bottom: 2px solid #ffffff;
       transform: rotate(42deg);
+      animation: checkDraw 180ms ease both;
+    }
+
+    .complete-action.completed .checkbox {
+      border-color: var(--complete);
+      background: var(--complete);
+      transform: scale(1.06);
+    }
+
+    .completion-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      z-index: 10;
+      transform: translate(-50%, 12px);
+      border: 1px solid rgba(22, 121, 99, 0.28);
+      border-radius: 10px;
+      background: #fffdf7;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 760;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .completion-toast.show {
+      animation: toastIn 1200ms ease both;
     }
 
     .item-source {
@@ -590,6 +672,62 @@
       }
     }
 
+    @keyframes taskReward {
+      0% {
+        transform: scale(1);
+        background: var(--raised);
+      }
+      32% {
+        transform: scale(1.012);
+        background: #fff1db;
+      }
+      100% {
+        transform: scale(1);
+        background: #f3eadc;
+      }
+    }
+
+    @keyframes checkDraw {
+      from {
+        opacity: 0;
+        transform: rotate(42deg) scale(0.7);
+      }
+      to {
+        opacity: 1;
+        transform: rotate(42deg) scale(1);
+      }
+    }
+
+    @keyframes doneBadge {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes toastIn {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 12px);
+      }
+      16% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, 6px);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -729,7 +867,7 @@
         <h2 class="task-title">Polish narrative and risks section</h2>
         <div class="task-foot">
           <span>Review window starts tomorrow</span>
-          <span class="tiny-check"><span class="checkbox"></span>Done</span>
+          <button class="complete-action" type="button" aria-label="Mark Polish narrative and risks section done"><span class="tiny-check"><span class="checkbox"></span><span>Done</span></span></button>
         </div>
       </article>
 
@@ -741,7 +879,7 @@
         <h2 class="task-title">Confirm current impact is closed</h2>
         <div class="task-foot">
           <span>Needs owner and closure today</span>
-          <span class="tiny-check"><span class="checkbox"></span>Done</span>
+          <button class="complete-action" type="button" aria-label="Mark Confirm current impact is closed done"><span class="tiny-check"><span class="checkbox"></span><span>Done</span></span></button>
         </div>
       </article>
 
@@ -753,7 +891,7 @@
         <h2 class="task-title">Review frontend design direction</h2>
         <div class="task-foot">
           <span>Moved up manually yesterday</span>
-          <span class="tiny-check"><span class="checkbox"></span>Done</span>
+          <button class="complete-action" type="button" aria-label="Mark Review frontend design direction done"><span class="tiny-check"><span class="checkbox"></span><span>Done</span></span></button>
         </div>
       </article>
     </section>
@@ -857,5 +995,28 @@
       <span>4 cards hidden until their return date</span>
     </section>
   </main>
+  <div class="completion-toast" role="status" aria-live="polite"></div>
+  <script>
+    const toast = document.querySelector(".completion-toast");
+    document.querySelectorAll(".complete-action").forEach((button) => {
+      button.addEventListener("click", () => {
+        const task = button.closest(".top-task");
+        if (task.classList.contains("is-complete")) {
+          return;
+        }
+        button.classList.add("completed");
+        button.querySelector(".tiny-check span:last-child").textContent = "Done";
+        task.classList.add("is-completing");
+        window.setTimeout(() => {
+          task.classList.remove("is-completing");
+          task.classList.add("is-complete");
+        }, 520);
+        toast.classList.remove("show");
+        toast.textContent = "Task closed. One less thing pulling on your day.";
+        void toast.offsetWidth;
+        toast.classList.add("show");
+      });
+    });
+  </script>
 </body>
 </html>
