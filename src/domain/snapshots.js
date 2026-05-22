@@ -1,6 +1,8 @@
 export function upsertDailySnapshot(data, dateKey, homeModel, completedTodayItemIds = []) {
   const existing = data.dailySnapshots.find((snapshot) => snapshot.date === dateKey);
-  const behaviorEventIds = data.behaviorEvents.map((event) => event.id);
+  const behaviorEventIds = data.behaviorEvents
+    .filter((event) => event.timestamp.slice(0, 10) === dateKey)
+    .map((event) => event.id);
   const generatedTodayItemIds = data.goalCards.flatMap((card) =>
     card.todayItems
       .filter((item) => item.scheduledFor === dateKey && (item.source === "routine" || item.source === "date_triggered"))

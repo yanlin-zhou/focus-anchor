@@ -1,14 +1,14 @@
 const STORAGE_KEY = "focus-anchor-data";
 
 export function createMemoryRepository(initialData = null) {
-  let current = initialData;
+  let current = cloneData(initialData);
   return {
     async load() {
-      return current;
+      return cloneData(current);
     },
     async save(data) {
-      current = structuredClone(data);
-      return current;
+      current = cloneData(data);
+      return cloneData(current);
     }
   };
 }
@@ -24,4 +24,8 @@ export function createChromeRepository(chromeStorage = globalThis.chrome?.storag
       return data;
     }
   };
+}
+
+function cloneData(data) {
+  return data === null ? null : structuredClone(data);
 }
