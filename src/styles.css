@@ -106,7 +106,7 @@ input {
   color: var(--text);
   min-height: 36px;
   padding: 0 13px;
-  cursor: default;
+  cursor: pointer;
   flex: 0 0 auto;
   white-space: nowrap;
   box-shadow: 0 1px 0 rgba(45, 38, 31, 0.05);
@@ -140,7 +140,7 @@ input {
   border: 0;
   background: transparent;
   padding: 0;
-  cursor: default;
+  cursor: pointer;
 }
 
 .daily-panel {

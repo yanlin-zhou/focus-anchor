@@ -1,4 +1,8 @@
+import { toLocalDateKey } from "./date.js";
+
 export function createInitialData(nowIso = new Date().toISOString()) {
+  const todayKey = toLocalDateKey(nowIso);
+
   return {
     version: 1,
     createdAt: nowIso,
@@ -23,7 +27,7 @@ export function createInitialData(nowIso = new Date().toISOString()) {
             title: "Polish narrative and risks section",
             status: "open",
             source: "routine",
-            scheduledFor: "2026-05-22",
+            scheduledFor: todayKey,
             doneAt: null,
             skippedAt: null,
             note: "",
@@ -36,7 +40,7 @@ export function createInitialData(nowIso = new Date().toISOString()) {
             title: "Check metrics table against dashboard",
             status: "open",
             source: "date_triggered",
-            scheduledFor: "2026-05-22",
+            scheduledFor: todayKey,
             doneAt: null,
             skippedAt: null,
             note: "",
@@ -76,8 +80,8 @@ export function createInitialData(nowIso = new Date().toISOString()) {
         updatedAt: nowIso,
         completedAt: null,
         todayItems: [
-          { id: "item-rollout-impact", goalCardId: "card-rollout-follow-up", title: "Confirm current impact is closed", status: "open", source: "manual", scheduledFor: "2026-05-22", doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso },
-          { id: "item-rollout-prevention", goalCardId: "card-rollout-follow-up", title: "Write prevention note for review", status: "open", source: "manual", scheduledFor: "2026-05-22", doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso }
+          { id: "item-rollout-impact", goalCardId: "card-rollout-follow-up", title: "Confirm current impact is closed", status: "open", source: "manual", scheduledFor: todayKey, doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso },
+          { id: "item-rollout-prevention", goalCardId: "card-rollout-follow-up", title: "Write prevention note for review", status: "open", source: "manual", scheduledFor: todayKey, doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso }
         ],
         links: [
           { id: "link-rollout-alert", goalCardId: "card-rollout-follow-up", label: "Alert", url: "https://example.com/alert", kind: "dashboard", includeInOpenAll: true, createdAt: nowIso, updatedAt: nowIso },
@@ -98,8 +102,8 @@ export function createInitialData(nowIso = new Date().toISOString()) {
         updatedAt: nowIso,
         completedAt: null,
         todayItems: [
-          { id: "item-focus-review-design", goalCardId: "card-focus-anchor-mvp", title: "Review frontend design direction", status: "open", source: "manual", scheduledFor: "2026-05-22", doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso },
-          { id: "item-focus-slices", goalCardId: "card-focus-anchor-mvp", title: "Decide implementation slices", status: "open", source: "manual", scheduledFor: "2026-05-22", doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso }
+          { id: "item-focus-review-design", goalCardId: "card-focus-anchor-mvp", title: "Review frontend design direction", status: "open", source: "manual", scheduledFor: todayKey, doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso },
+          { id: "item-focus-slices", goalCardId: "card-focus-anchor-mvp", title: "Decide implementation slices", status: "open", source: "manual", scheduledFor: todayKey, doneAt: null, skippedAt: null, note: "", createdAt: nowIso, updatedAt: nowIso }
         ],
         links: [
           { id: "link-focus-spec", goalCardId: "card-focus-anchor-mvp", label: "Spec", url: "https://example.com/spec", kind: "doc", includeInOpenAll: true, createdAt: nowIso, updatedAt: nowIso },
