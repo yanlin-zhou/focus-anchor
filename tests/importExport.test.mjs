@@ -60,6 +60,20 @@ test("invalid app data returns schema errors", () => {
   assert.match(result.error, /goalCards must be an array/);
 });
 
+test("valid JSON with non-object app data returns schema errors without throwing", () => {
+  for (const text of ["null", "\"not app data\"", "42", "true", "[]"]) {
+    let result;
+    assert.doesNotThrow(() => {
+      result = parseImportJson(text, NOW);
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.data, null);
+    assert.equal(result.summary, null);
+    assert.match(result.error, /schema error|import/i);
+  }
+});
+
 test("invalid import does not overwrite memory repository state", async () => {
   const repo = createMemoryRepository(createInitialData(NOW));
   const before = await repo.load();

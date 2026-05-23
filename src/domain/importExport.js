@@ -18,6 +18,15 @@ export function parseImportJson(text, nowIso = new Date().toISOString()) {
     };
   }
 
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    return {
+      ok: false,
+      data: null,
+      summary: null,
+      error: "Import file has schema error: app data must be an object."
+    };
+  }
+
   const data = ensureSetupMeta(parsed, nowIso);
   const validation = validateAppData(data);
   if (!validation.ok) {
