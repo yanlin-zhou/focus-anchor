@@ -66,6 +66,17 @@ function renderDraftCard(card) {
         <span>${escapeHtml(card.itemCount)} items</span>
         <span>${escapeHtml(card.linkCount)} links</span>
       </div>
+      <form class="draft-card-form" data-action="update-draft-card" data-draft-card-id="${escapeHtml(card.id)}">
+        <label>
+          <span>Card title</span>
+          <input class="mock-input" name="title" value="${escapeHtml(card.title ?? "")}" autocomplete="off">
+        </label>
+        <label>
+          <span>Today item</span>
+          <input class="mock-input" name="itemTitle" placeholder="Today item" autocomplete="off">
+        </label>
+        <button class="button" type="submit">Save</button>
+      </form>
       ${card.items.length > 0 ? `<ul>${card.items.map((item) => `<li>${escapeHtml(item.title)}</li>`).join("")}</ul>` : ""}
     </article>
   `;

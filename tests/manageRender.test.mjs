@@ -45,7 +45,12 @@ test("renderManageHtml renders manage shell sections and data actions", () => {
   assert.match(html, /data-section="data"/);
   assert.match(html, /Export JSON/);
   assert.match(html, /Import JSON/);
+  assert.match(html, /type="file"/);
+  assert.match(html, /data-action="confirm-import"/);
+  assert.match(html, /Import summary/);
   assert.match(html, /type RESET/);
+  assert.match(html, /data-action="open-reset-confirmation"/);
+  assert.match(html, /data-action="confirm-reset-data" disabled/);
 });
 
 test("renderManageHtml escapes card text", () => {

@@ -1,4 +1,4 @@
-import { serializeExportData } from "./domain/importExport.js";
+import { parseImportJson, serializeExportData } from "./domain/importExport.js";
 import { updateGoalCard } from "./domain/manageActions.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { readCheckbox, readFormData, readNumber } from "./ui/forms.js";
@@ -10,6 +10,7 @@ const repo = createChromeRepository();
 
 let appData = await repo.load();
 let selectedCardId = appData?.goalCards?.[0]?.id ?? null;
+let pendingImport = null;
 
 render();
 
@@ -46,6 +47,12 @@ app.addEventListener("click", async (event) => {
     return;
   }
 
+  if (action === "open-reset-confirmation") {
+    const panel = app.querySelector(".reset-confirmation");
+    if (panel) panel.hidden = false;
+    return;
+  }
+
   if (!appData) return;
 
   if (action === "export-json") {
@@ -53,17 +60,62 @@ app.addEventListener("click", async (event) => {
     return;
   }
 
-  if (action === "reset-data") {
+  if (action === "confirm-import" && pendingImport?.data) {
+    appData = pendingImport.data;
+    pendingImport = null;
+    selectedCardId = appData.goalCards?.[0]?.id ?? null;
+    await repo.save(appData);
+    render();
+    return;
+  }
+
+  if (action === "confirm-reset-data") {
     await repo.remove();
     appData = null;
     selectedCardId = null;
+    pendingImport = null;
     render();
+  }
+});
+
+app.addEventListener("change", async (event) => {
+  const input = event.target?.closest?.("[data-action='import-json-file']");
+  if (!input) return;
+
+  const panel = app.querySelector(".import-panel");
+  const summary = app.querySelector("[data-role='import-summary']");
+  const confirmButton = app.querySelector("[data-action='confirm-import']");
+  if (!panel || !summary || !confirmButton) return;
+
+  panel.hidden = false;
+  pendingImport = null;
+  confirmButton.disabled = true;
+
+  const file = input.files?.[0];
+  if (!file) {
+    summary.textContent = "Choose an exported Focus Anchor JSON file to review it before replacing local data.";
+    return;
+  }
+
+  try {
+    const result = parseImportJson(await file.text());
+    if (!result.ok) {
+      summary.textContent = result.error;
+      return;
+    }
+
+    const importSummary = result.summary;
+    summary.textContent = `${importSummary.cards} cards, ${importSummary.openItems} open items, ${importSummary.rules} rules, ${importSummary.snapshots} snapshots`;
+    pendingImport = result;
+    confirmButton.disabled = false;
+  } catch {
+    summary.textContent = "Import file could not be read.";
   }
 });
 
 app.addEventListener("input", (event) => {
   if (event.target?.name !== "reset-confirmation") return;
-  const resetButton = app.querySelector("[data-action='reset-data']");
+  const resetButton = app.querySelector("[data-action='confirm-reset-data']");
   if (!resetButton) return;
   resetButton.disabled = event.target.value !== "RESET";
 });

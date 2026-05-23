@@ -41,15 +41,77 @@ git pull --ff-only origin main
 - `Backlog`：默认折叠，降低认知负担。
 - `Parking / Paused`：被暂停或 snooze 的卡片。
 
-## 3. 第一次配置自己的事项
+## 3. 第一次无代码设置
 
-第一版还没有完整的设置页，所以自己的项目、routine、链接需要先改 seed data：
+第一次打开新标签页时，Focus Anchor 会进入 no-code setup，不需要改代码文件。
 
-```text
-src/domain/sampleData.js
+1. 打开一个新标签页。
+2. 点击 `Start setup`。
+3. 选择一个模板：`Project Progress`、`Routine Work`、`Ad Hoc Issue` 或 `Date Check`。
+4. 创建 1 到 5 张卡片；建议先建 3 张，够用也不容易分心。
+5. 在卡片内填写标题，并至少添加一个 `Today item`。
+6. 点击每张卡片里的 `Save` 保存草稿编辑。
+7. 有至少一个 today item 后，点击 `Finish setup` 开始使用。
+
+每张卡片可以理解为一个你想保护注意力的工作上下文。比如一个项目、一个 routine、一件临时问题，或一个指定日期前后必须检查的事项。
+
+## 4. 管理卡片、规则和数据
+
+完成设置后，点击新标签页右上角的 `Manage` 可以打开管理页。
+
+管理页现在分成三块：
+
+- `Cards`：选择卡片后，可以编辑标题、类型、状态、重要性、是否 pinned、snooze 日期和排序说明。
+- `Rules`：查看当前保存的 routine 或 date check 规则。当前版本先支持查看，后续会补上无代码编辑。
+- `Data`：导出、导入或重置本浏览器里的本地数据。
+
+数据操作说明：
+
+- `Export JSON` 会下载当前本地数据，适合备份或迁移到另一台电脑。
+- `Import JSON` 会先让你选择 `.json` 文件，再显示 `Import summary`。确认摘要无误后，点击 `Confirm import` 才会替换本地数据。
+- `Reset data` 需要先打开确认区，再输入 `RESET`，最后点击 `Confirm reset`。这个操作只清除当前浏览器里的 Focus Anchor 数据。
+
+## 5. 每天怎么用
+
+建议日常只按这个顺序用：
+
+1. 打开新标签页，看 `Today's anchor`。
+2. 先做 `Top 3 Today Items` 的第一项。
+3. 做完后点击 `Done`，让它从 Top 3 里消失。
+4. 如果需要上下文，点击卡片的 `Expand`，查看今天的事项和相关链接。
+5. 如果要进入一组工作上下文，点击 `Open all` 打开这张卡片配置过的链接。
+6. 临时想到今天必须做的小事，点击 `Quick Add`。
+7. 如果某张卡今天不该打扰你，点击 `Snooze`，它会进入 Parking，明天再回来。
+8. Backlog 默认不要打开；只有需要 review 低优事项时再点 `Show backlog`。
+
+## 6. 更新插件代码
+
+代码更新后：
+
+```bash
+git fetch origin
+git switch main
+git pull --ff-only origin main
 ```
 
-重点改 `goalCards` 数组。每张卡片可以理解为一个你想保护注意力的工作上下文。
+然后去 `chrome://extensions` 里点击 `Focus Anchor` 的 reload 图标。
+
+如果只是更新 UI 或逻辑，通常不需要清数据。需要备份或迁移时，优先在 Manage 页面使用 `Export JSON` 和 `Import JSON`。
+
+## 7. 当前版本边界
+
+现在这个版本已经适合本地试用，但还不是完整产品：
+
+- no-code setup 已支持创建卡片和 today item；规则编辑仍在 Manage 页面后续迭代。
+- 不会自动读取 Lark、日历、邮件或项目管理工具。
+- 不会同步到其他设备。
+- AI 学习机制还没有启用，但已经记录了 `behaviorEvents` 和 `dailySnapshots`，后续可以基于这些数据做优先级回顾和自我迭代。
+
+## 8. 开发者附录：sampleData fixture
+
+`src/domain/sampleData.js` 现在主要作为开发 fixture 和测试样例，不再是普通用户的主要配置路径。
+
+如果你在开发时需要调整 seed data，可以修改 `goalCards` 数组。注意：`sampleData.js` 只在第一次没有本地数据时写入。如果 Chrome storage 里已经有数据，修改 fixture 不会自动覆盖。调试时可以在 Manage 页面重置本地数据，或在 DevTools Console 里清除 `focus-anchor-data` 后刷新。
 
 常用字段：
 
@@ -66,159 +128,7 @@ src/domain/sampleData.js
 }
 ```
 
-字段说明：
-
-- `id`：唯一 ID，建议用英文小写和短横线。
-- `title`：卡片标题。
-- `type`：支持 `project`、`routine`、`ad_hoc`、`deadline`。
-- `importance`：1 到 5，越高越容易排到前面。
-- `status`：通常用 `active`；也支持 `paused` 和 `done`。
-- `todayItems`：手动放入今天要做的事项。
-- `links`：和这个卡片相关的文档、Dashboard、Repo、Lark thread 等链接。
-- `rules`：周期性或指定日期自动生成事项。
-
-手动事项示例：
-
-```js
-{
-  id: "item-report-polish",
-  goalCardId: "card-biweekly-report",
-  title: "Polish narrative and risks section",
-  status: "open",
-  source: "manual",
-  scheduledFor: todayKey,
-  doneAt: null,
-  skippedAt: null,
-  note: "",
-  createdAt: nowIso,
-  updatedAt: nowIso
-}
-```
-
-链接示例：
-
-```js
-{
-  id: "link-report-doc",
-  goalCardId: "card-biweekly-report",
-  label: "Lark Doc",
-  url: "https://example.com/report",
-  kind: "doc",
-  includeInOpenAll: true,
-  createdAt: nowIso,
-  updatedAt: nowIso
-}
-```
-
-`includeInOpenAll: true` 表示点击卡片里的 `Open all` 时会一起打开这个链接。
-
-## 4. 配置 routine 和日期提醒
-
-每隔一段时间要自动出现的事情，可以放到卡片的 `rules` 里。
-
-每周或每两周 routine 示例：
-
-```js
-{
-  id: "rule-report-biweekly-polish",
-  goalCardId: "card-biweekly-report",
-  type: "routine",
-  titleTemplate: "Polish narrative and risks section",
-  schedule: {
-    cadence: "biweekly",
-    weekdays: [3],
-    startDate: "2026-05-06"
-  },
-  active: true,
-  lastGeneratedFor: null,
-  createdAt: nowIso,
-  updatedAt: nowIso
-}
-```
-
-说明：
-
-- `cadence` 支持 `weekly` 和 `biweekly`。
-- `weekdays` 使用 JavaScript 的星期编号：`0` 是周日，`1` 是周一，`2` 是周二，`3` 是周三，`4` 是周四，`5` 是周五，`6` 是周六。
-- `startDate` 用 `YYYY-MM-DD`。
-
-指定日期提醒示例：
-
-```js
-{
-  id: "rule-check-launch-on-may-30",
-  goalCardId: "card-launch",
-  type: "date_triggered_check",
-  titleTemplate: "Check whether launch deliverable is done",
-  schedule: { date: "2026-05-30" },
-  active: true,
-  lastGeneratedFor: null,
-  createdAt: nowIso,
-  updatedAt: nowIso
-}
-```
-
-到了 `schedule.date` 当天，这条规则会生成一个 open item，并参与 Top 3 排序。
-
-## 5. 让配置生效
-
-改完 `src/domain/sampleData.js` 后：
-
-1. 打开 `chrome://extensions`。
-2. 找到 `Focus Anchor`。
-3. 点击 reload 图标。
-4. 打开一个新标签页。
-
-注意：`sampleData.js` 只在第一次打开时写入本地数据。如果你已经打开过插件，Chrome storage 里已经有旧数据，修改 `sampleData.js` 不会自动覆盖旧数据。
-
-想重新使用新的 seed data，可以清掉本地数据：
-
-1. 打开 Focus Anchor 新标签页。
-2. 右键页面，选择 `Inspect`。
-3. 在 Console 里执行：
-
-```js
-await chrome.storage.local.remove("focus-anchor-data");
-location.reload();
-```
-
-刷新后会重新从 `sampleData.js` 初始化。
-
-## 6. 每天怎么用
-
-建议日常只按这个顺序用：
-
-1. 打开新标签页，看 `Today's anchor`。
-2. 先做 `Top 3 Today Items` 的第一项。
-3. 做完后点击 `Done`，让它从 Top 3 里消失。
-4. 如果需要上下文，点击卡片的 `Expand`，查看今天的事项和相关链接。
-5. 如果要进入一组工作上下文，点击 `Open all` 打开这张卡片配置过的链接。
-6. 临时想到今天必须做的小事，点击 `Quick Add`。
-7. 如果某张卡今天不该打扰你，点击 `Snooze`，它会进入 Parking，明天再回来。
-8. Backlog 默认不要打开；只有需要 review 低优事项时再点 `Show backlog`。
-
-## 7. 更新插件代码
-
-代码更新后：
-
-```bash
-git fetch origin
-git switch main
-git pull --ff-only origin main
-```
-
-然后去 `chrome://extensions` 里点击 `Focus Anchor` 的 reload 图标。
-
-如果只是更新 UI 或逻辑，通常不需要清数据。只有改了 `sampleData.js` 并希望重新初始化时，才需要按上面的方式清掉 `focus-anchor-data`。
-
-## 8. 当前版本边界
-
-现在这个版本已经适合本地试用，但还不是完整产品：
-
-- 没有设置页，卡片和规则主要通过 `src/domain/sampleData.js` 配置。
-- 不会自动读取 Lark、日历、邮件或项目管理工具。
-- 不会同步到其他设备。
-- AI 学习机制还没有启用，但已经记录了 `behaviorEvents` 和 `dailySnapshots`，后续可以基于这些数据做优先级回顾和自我迭代。
+`type` 支持 `project`、`routine`、`ad_hoc`、`deadline`。`includeInOpenAll: true` 表示点击卡片里的 `Open all` 时会一起打开这个链接。规则里的 `cadence` 支持 `weekly` 和 `biweekly`；指定日期提醒使用 `date_triggered_check` 和 `YYYY-MM-DD` 日期。
 
 ## 9. 常见问题
 
@@ -231,14 +141,13 @@ git pull --ff-only origin main
 - Chrome 是否提示过恢复原 New Tab 页面；如果有，选择保留 Focus Anchor。
 - 是否有另一个 New Tab 插件覆盖了它。
 
+### 导入 JSON 后看起来不对
+
+先确认文件来自 Focus Anchor 的 `Export JSON`。导入前会显示卡片数、open items、规则数和快照数；如果摘要明显不对，不要点击 `Confirm import`。
+
 ### 修改了 sampleData 但页面没变
 
-这是正常的。旧数据已经存在 Chrome storage 里。执行：
-
-```js
-await chrome.storage.local.remove("focus-anchor-data");
-location.reload();
-```
+这是正常的。旧数据已经存在 Chrome storage 里。普通使用优先通过 Manage 页面重置或导入数据；开发调试时也可以在 DevTools Console 清除 `focus-anchor-data` 后刷新。
 
 ### 页面空白
 

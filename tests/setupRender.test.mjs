@@ -72,6 +72,27 @@ test("renderSetupHtml shows live preview when draft has content", () => {
   assert.doesNotMatch(html, /data-action="finish-setup" disabled/);
 });
 
+test("renderSetupHtml includes inline draft card editing controls", () => {
+  const viewModel = toSetupViewModel({
+    cards: [
+      {
+        id: "draft-quarter-plan",
+        templateId: "project_progress",
+        title: "Quarter plan",
+        type: "project",
+        items: [],
+        links: []
+      }
+    ]
+  }, NOW);
+  const html = renderSetupHtml(viewModel);
+
+  assert.match(html, /data-action="update-draft-card"/);
+  assert.match(html, /data-draft-card-id="draft-quarter-plan"/);
+  assert.match(html, /name="title"/);
+  assert.match(html, /name="itemTitle"/);
+});
+
 test("renderSetupHtml escapes dynamic count fields", () => {
   const unsafe = `"><script>alert(1)</script>`;
   const html = renderSetupHtml({

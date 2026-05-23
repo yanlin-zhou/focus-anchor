@@ -127,7 +127,15 @@ function renderDataSection(summary) {
       <div class="section-head"><span>Data</span><span>Local only</span></div>
       <div class="data-actions">
         <button class="button primary" type="button" data-action="export-json">Export JSON</button>
-        <button class="button" type="button" data-action="import-json">Import JSON</button>
+        <label class="button file-button">
+          <span>Import JSON</span>
+          <input class="visually-hidden" type="file" accept="application/json" data-action="import-json-file">
+        </label>
+      </div>
+      <div class="import-panel" hidden>
+        <h2>Import summary</h2>
+        <p data-role="import-summary">Choose an exported Focus Anchor JSON file to review it before replacing local data.</p>
+        <button class="button primary" type="button" data-action="confirm-import" disabled>Confirm import</button>
       </div>
       <dl class="summary-grid">
         ${Object.entries(summary).map(([key, value]) => `
@@ -140,13 +148,17 @@ function renderDataSection(summary) {
       <div class="danger-zone">
         <div>
           <strong>Reset local data</strong>
-          <p>To reset this browser, type RESET.</p>
+          <p>Open confirmation before clearing this browser.</p>
         </div>
-        <label>
-          <span>Confirmation</span>
-          <input name="reset-confirmation" autocomplete="off" placeholder="type RESET">
-        </label>
-        <button class="button" type="button" name="reset-confirmation" data-action="reset-data" disabled>Reset data</button>
+        <button class="button" type="button" data-action="open-reset-confirmation">Reset data</button>
+        <div class="reset-confirmation" hidden>
+          <p>This permanently clears local Focus Anchor data in this browser. To reset this browser, type RESET.</p>
+          <label>
+            <span>Confirmation</span>
+            <input name="reset-confirmation" autocomplete="off" placeholder="type RESET">
+          </label>
+          <button class="button" type="button" name="reset-confirmation" data-action="confirm-reset-data" disabled>Confirm reset</button>
+        </div>
       </div>
     </section>
   `;

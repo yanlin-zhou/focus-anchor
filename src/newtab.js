@@ -21,6 +21,49 @@ const uiState = {
 let appData = ensureSetupMeta(await repo.load());
 await refresh();
 
+app.addEventListener("submit", async (event) => {
+  const form = event.target.closest("form[data-action='update-draft-card']");
+  if (!form) return;
+  event.preventDefault();
+
+  const draftCardId = form.dataset.draftCardId;
+  const draft = appData?.setup?.draft;
+  const cards = Array.isArray(draft?.cards) ? draft.cards : [];
+  const card = cards.find((entry) => entry.id === draftCardId);
+  if (!draft || !card) return;
+
+  const nowIso = new Date().toISOString();
+  const todayKey = toLocalDateKey(nowIso);
+  const fields = new FormData(form);
+  const title = String(fields.get("title") ?? "").trim();
+  const itemTitle = String(fields.get("itemTitle") ?? "").trim();
+
+  appData = {
+    ...appData,
+    updatedAt: nowIso,
+    setup: {
+      ...appData.setup,
+      draft: {
+        ...draft,
+        cards: cards.map((entry) => {
+          if (entry.id !== draftCardId) return entry;
+          return {
+            ...entry,
+            title: title || entry.title,
+            items: itemTitle
+              ? [...(Array.isArray(entry.items) ? entry.items : []), { title: itemTitle, scheduledFor: todayKey }]
+              : (Array.isArray(entry.items) ? entry.items : [])
+          };
+        }),
+        activeCardId: draftCardId
+      }
+    }
+  };
+
+  await repo.save(appData);
+  await refresh();
+});
+
 app.addEventListener("click", async (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
