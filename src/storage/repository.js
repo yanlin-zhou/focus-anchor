@@ -9,6 +9,9 @@ export function createMemoryRepository(initialData = null) {
     async save(data) {
       current = cloneData(data);
       return cloneData(current);
+    },
+    async remove() {
+      current = null;
     }
   };
 }
@@ -22,6 +25,9 @@ export function createChromeRepository(chromeStorage = globalThis.chrome?.storag
     async save(data) {
       await chromeStorage.set({ [STORAGE_KEY]: data });
       return data;
+    },
+    async remove() {
+      await chromeStorage.remove(STORAGE_KEY);
     }
   };
 }

@@ -10,6 +10,12 @@ export function validateAppData(data) {
   if (!Array.isArray(data.goalCards)) errors.push("goalCards must be an array");
   if (!Array.isArray(data.behaviorEvents)) errors.push("behaviorEvents must be an array");
   if (!Array.isArray(data.dailySnapshots)) errors.push("dailySnapshots must be an array");
+  if (data.setup !== undefined) {
+    if (typeof data.setup !== "object" || data.setup === null) errors.push("setup must be an object");
+    if (data.setup && data.setup.version !== 1) errors.push("setup version must be 1");
+    if (data.setup && data.setup.completedAt !== null && typeof data.setup.completedAt !== "string") errors.push("setup completedAt must be null or a string");
+    if (data.setup && data.setup.skippedAt !== null && typeof data.setup.skippedAt !== "string") errors.push("setup skippedAt must be null or a string");
+  }
 
   for (const card of data.goalCards ?? []) {
     if (!card.id) errors.push("goal card missing id");
