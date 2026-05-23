@@ -63,8 +63,8 @@ function renderDraftCard(card) {
         <p>${escapeHtml(labelForType(card.type))}</p>
       </div>
       <div class="draft-card-stats">
-        <span>${card.itemCount} items</span>
-        <span>${card.linkCount} links</span>
+        <span>${escapeHtml(card.itemCount)} items</span>
+        <span>${escapeHtml(card.linkCount)} links</span>
       </div>
       ${card.items.length > 0 ? `<ul>${card.items.map((item) => `<li>${escapeHtml(item.title)}</li>`).join("")}</ul>` : ""}
     </article>
@@ -91,7 +91,7 @@ function renderPreviewCard(card) {
       <h2>${escapeHtml(card.title || "Untitled focus card")}</h2>
       <div class="mini-meta">
         <span>${escapeHtml(labelForType(card.type))}</span>
-        <span>${card.itemCount} items</span>
+        <span>${escapeHtml(card.itemCount)} items</span>
       </div>
     </article>
   `;

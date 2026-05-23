@@ -72,9 +72,66 @@ test("renderSetupHtml shows live preview when draft has content", () => {
   assert.doesNotMatch(html, /data-action="finish-setup" disabled/);
 });
 
-test("styles include setup shell and preview selectors", () => {
-  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+test("renderSetupHtml escapes dynamic count fields", () => {
+  const unsafe = `"><script>alert(1)</script>`;
+  const html = renderSetupHtml({
+    nowIso: NOW,
+    title: "Shape your focus anchors",
+    cardCountLabel: "1 of 5 cards",
+    recommendation: "3 cards recommended",
+    canFinish: true,
+    errors: [],
+    templates: [],
+    cards: [
+      {
+        id: "draft-unsafe",
+        title: "Unsafe counts",
+        type: "project",
+        itemCount: unsafe,
+        linkCount: unsafe,
+        items: [],
+        links: []
+      }
+    ],
+    preview: {
+      topTasks: [],
+      cards: [
+        {
+          id: "draft-preview-unsafe",
+          title: "Preview unsafe counts",
+          type: "project",
+          itemCount: unsafe,
+          linkCount: 0,
+          items: [],
+          links: []
+        }
+      ]
+    }
+  });
 
-  assert.match(css, /\.setup-shell\s*\{/);
-  assert.match(css, /\.setup-preview\s*\{/);
+  assert.doesNotMatch(html, /"><script>alert\(1\)<\/script>/);
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt; items/);
+  assert.match(html, /&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt; links/);
+});
+
+test("styles include required setup selectors and responsive shell", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const selectors = [
+    ".setup-empty",
+    ".setup-shell",
+    ".setup-preview",
+    ".setup-panel",
+    ".template-grid",
+    ".template-option",
+    ".setup-card-list",
+    ".draft-card",
+    ".form-error"
+  ];
+
+  for (const selector of selectors) {
+    assert.match(css, new RegExp(`${selector.replace(".", "\\.")}\\s*\\{`));
+  }
+  assert.match(css, /button:disabled\s*\{/);
+  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.setup-shell\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
 });
