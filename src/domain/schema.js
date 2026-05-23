@@ -44,6 +44,14 @@ export function validateAppData(data) {
       if (!rule.id) errors.push(`goal card ${card.id} has rule missing id`);
       if (!RULE_TYPES.includes(rule.type)) errors.push(`rule ${rule.id} has invalid type`);
       if (!rule.titleTemplate) errors.push(`rule ${rule.id} missing titleTemplate`);
+      if (rule.type === "routine") {
+        if (!["weekly", "biweekly"].includes(rule.schedule?.cadence)) errors.push(`rule ${rule.id} routine cadence must be weekly or biweekly`);
+        if (!Array.isArray(rule.schedule?.weekdays)) errors.push(`rule ${rule.id} routine weekdays must be an array`);
+        if (!rule.schedule?.startDate) errors.push(`rule ${rule.id} routine startDate is required`);
+      }
+      if (rule.type === "date_triggered_check" && !rule.schedule?.date) {
+        errors.push(`rule ${rule.id} date_triggered_check date is required`);
+      }
     }
   }
 
