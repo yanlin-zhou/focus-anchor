@@ -60,6 +60,26 @@ test("invalid app data returns schema errors", () => {
   assert.match(result.error, /goalCards must be an array/);
 });
 
+test("import rejects unsafe link URL schemes", () => {
+  const data = createInitialData(NOW);
+  data.goalCards[0] = {
+    ...data.goalCards[0],
+    links: [
+      {
+        ...data.goalCards[0].links[0],
+        url: "data:text/html,hello"
+      }
+    ]
+  };
+
+  const result = parseImportJson(JSON.stringify(data), NOW);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.data, null);
+  assert.match(result.error, /invalid url/);
+});
+
+
 test("valid JSON with non-object app data returns schema errors without throwing", () => {
   for (const text of ["null", "\"not app data\"", "42", "true", "[]"]) {
     let result;

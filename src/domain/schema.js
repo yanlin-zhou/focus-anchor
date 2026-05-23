@@ -5,6 +5,15 @@ export const ITEM_SOURCES = ["manual", "routine", "date_triggered", "suggested"]
 export const LINK_KINDS = ["doc", "dashboard", "repo", "thread", "other"];
 export const RULE_TYPES = ["routine", "date_triggered_check"];
 
+export function isAllowedLinkUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function validateAppData(data) {
   const errors = [];
   if (!Array.isArray(data.goalCards)) errors.push("goalCards must be an array");
@@ -37,6 +46,7 @@ export function validateAppData(data) {
       if (!link.id) errors.push(`goal card ${card.id} has link missing id`);
       if (!link.label) errors.push(`link ${link.id} missing label`);
       if (!link.url) errors.push(`link ${link.id} missing url`);
+      if (link.url && !isAllowedLinkUrl(link.url)) errors.push(`link ${link.id} has invalid url`);
       if (!LINK_KINDS.includes(link.kind)) errors.push(`link ${link.id} has invalid kind`);
     }
 

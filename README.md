@@ -4,7 +4,7 @@ Stay anchored on what matters most.
 
 ## MVP
 
-Focus Anchor is a local-first Chrome New Tab extension. It shows the top 3 things to do today, keeps larger work contexts collapsed by default, and stores data locally.
+Focus Anchor is a local-first Chrome New Tab extension. On first open it starts with a no-code setup flow; after setup it shows the top 3 things to do today, keeps larger work contexts collapsed by default, and stores data locally.
 
 ## Install and Usage
 
@@ -38,7 +38,8 @@ Load locally in Chrome:
 
 After loading the extension locally:
 
-- Open a new tab and confirm the Top 3 Today Items appear above collapsed Focus Lane cards.
+- Open a new tab with empty local storage and confirm the setup screen appears instead of demo/sample data.
+- Complete setup with one card and one today item, then confirm the Top 3 Today Items appear above collapsed Focus Lane cards.
 - Confirm Backlog is collapsed by default.
 - Click a Top 3 `Done` action and confirm the completion reward motion plays without shifting the layout.
 - Open another new tab and confirm local state persists.

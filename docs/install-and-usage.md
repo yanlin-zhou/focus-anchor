@@ -33,7 +33,7 @@ git pull --ff-only origin main
 6. 打开一个新标签页。
 7. 如果 Chrome 询问是否保留新的 New Tab 页面，选择保留。
 
-安装成功后，新标签页会显示：
+第一次安装成功后，新标签页会先显示 no-code setup。完成设置后，之后的新标签页会显示：
 
 - 顶部一句自然语言 summary。
 - `Top 3 Today Items`：今天最应该先做的 3 件事。
@@ -111,7 +111,7 @@ git pull --ff-only origin main
 
 `src/domain/sampleData.js` 现在主要作为开发 fixture 和测试样例，不再是普通用户的主要配置路径。
 
-如果你在开发时需要调整 seed data，可以修改 `goalCards` 数组。注意：`sampleData.js` 只在第一次没有本地数据时写入。如果 Chrome storage 里已经有数据，修改 fixture 不会自动覆盖。调试时可以在 Manage 页面重置本地数据，或在 DevTools Console 里清除 `focus-anchor-data` 后刷新。
+如果你在开发时需要调整 fixture，可以修改 `goalCards` 数组。注意：普通首次打开不会再自动写入 `sampleData.js`；空 storage 会进入 no-code setup。修改 fixture 只影响测试或你手动调用 fixture 的开发场景。调试时可以在 Manage 页面重置本地数据，或在 DevTools Console 里清除 `focus-anchor-data` 后刷新。
 
 常用字段：
 

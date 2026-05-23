@@ -32,3 +32,21 @@ test("first-run today items are scheduled for the local date of first open", () 
   assert.equal(scheduledDates.length > 0, true);
   assert.equal(scheduledDates.every((date) => date === expectedDate), true);
 });
+
+test("schema rejects unsafe link URL schemes", () => {
+  const data = createInitialData("2026-05-22T09:12:00.000Z");
+  data.goalCards[0] = {
+    ...data.goalCards[0],
+    links: [
+      {
+        ...data.goalCards[0].links[0],
+        url: "javascript:alert(1)"
+      }
+    ]
+  };
+
+  const result = validateAppData(data);
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join(" "), /invalid url/);
+});

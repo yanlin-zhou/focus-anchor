@@ -1,3 +1,5 @@
+import { isAllowedLinkUrl } from "../domain/schema.js";
+
 export function renderAppHtml(viewModel) {
   return `
     <header class="topbar">
@@ -97,7 +99,7 @@ function renderExpandedCard(card) {
       <div class="expanded-section">
         <div class="expanded-label">Card links</div>
         <div class="links">
-          ${card.links.length > 0 ? card.links.map(renderCardLink).join("") : `<span class="empty-line">No links saved yet.</span>`}
+          ${renderCardLinks(card.links)}
         </div>
       </div>
     </div>
@@ -116,6 +118,13 @@ function renderCardItem(item) {
 
 function renderCardLink(link) {
   return `<a class="chip" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>`;
+}
+
+function renderCardLinks(links) {
+  const safeLinks = (Array.isArray(links) ? links : []).filter((link) => isAllowedLinkUrl(link.url));
+  return safeLinks.length > 0
+    ? safeLinks.map(renderCardLink).join("")
+    : `<span class="empty-line">No links saved yet.</span>`;
 }
 
 function renderCollapsedBacklog(backlog) {

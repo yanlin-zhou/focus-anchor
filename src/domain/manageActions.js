@@ -1,4 +1,4 @@
-import { GOAL_STATUSES, GOAL_TYPES, LINK_KINDS, RULE_TYPES } from "./schema.js";
+import { GOAL_STATUSES, GOAL_TYPES, LINK_KINDS, RULE_TYPES, isAllowedLinkUrl } from "./schema.js";
 
 let fallbackIdCounter = 0;
 
@@ -64,7 +64,7 @@ export function updateGoalCard(data, cardId, patch = {}, nowIso = new Date().toI
 export function addLinkToCard(data, cardId, input, nowIso = new Date().toISOString()) {
   const label = trim(input?.label);
   const url = trim(input?.url);
-  if (!label || !isAllowedUrl(url)) return data;
+  if (!label || !isAllowedLinkUrl(url)) return data;
   const existingIds = collectIds(data);
 
   return updateCard(data, cardId, nowIso, (card) => ({
@@ -158,15 +158,6 @@ function normalizeImportance(value) {
 
 function trim(value) {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function isAllowedUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function makeId(prefix, nowIso, label, offset, existingIds) {

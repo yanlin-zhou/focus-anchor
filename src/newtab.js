@@ -3,6 +3,7 @@ import { nextLocalDateKey, toLocalDateKey } from "./domain/date.js";
 import { generateDueTodayItems } from "./domain/rules.js";
 import { buildHomeModel } from "./domain/ranking.js";
 import { upsertDailySnapshot } from "./domain/snapshots.js";
+import { isAllowedLinkUrl } from "./domain/schema.js";
 import { SETUP_TEMPLATES, completeSetupDraft, createDraft, createDraftCardFromTemplate } from "./domain/templates.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { toViewModel } from "./ui/viewModel.js";
@@ -190,8 +191,8 @@ app.addEventListener("click", async (event) => {
   if (action === "open-all") {
     const card = appData.goalCards.find((entry) => entry.id === target.dataset.cardId);
     if (!card) return;
-    for (const link of card.links.filter((entry) => entry.includeInOpenAll)) {
-      chrome.tabs.create({ url: link.url, active: false });
+    for (const link of card.links.filter((entry) => entry.includeInOpenAll && isAllowedLinkUrl(entry.url))) {
+      globalThis.chrome?.tabs?.create?.({ url: link.url, active: false });
     }
   }
 });

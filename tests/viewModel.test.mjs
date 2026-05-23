@@ -118,6 +118,39 @@ test("rendered html escapes dynamic task and card text including unknown type la
   assert.match(html, /&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
 });
 
+test("rendered html skips unsafe card links", () => {
+  const html = renderAppHtml({
+    dateLabel: "Fri, May 22",
+    summary: "Protect the tricky bits",
+    metaLine: "1 ready - Backlog collapsed",
+    topTasks: [],
+    focusCards: [
+      {
+        id: "card-links",
+        title: "Link card",
+        type: "project",
+        sortReason: "Manual",
+        openItemCount: 0,
+        linkCount: 2,
+        expanded: true,
+        pinned: false,
+        items: [],
+        links: [
+          { label: "Safe", url: "https://example.com" },
+          { label: "Unsafe", url: "javascript:alert(1)" }
+        ]
+      }
+    ],
+    backlog: { collapsed: true, count: 0, cards: [] },
+    parkingCount: 0
+  });
+
+  assert.match(html, /https:\/\/example\.com/);
+  assert.match(html, /Safe/);
+  assert.doesNotMatch(html, /javascript:alert/);
+  assert.doesNotMatch(html, /Unsafe/);
+});
+
 test("styles include a deadline goal type tag", () => {
   const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
 

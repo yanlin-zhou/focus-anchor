@@ -70,6 +70,8 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "confirm-reset-data") {
+    const confirmation = app.querySelector("input[name='reset-confirmation']");
+    if (confirmation?.value !== "RESET") return;
     await repo.remove();
     appData = null;
     selectedCardId = null;
