@@ -9,6 +9,8 @@ test("empty app shell contains setup metadata and no demo cards", () => {
   const data = createEmptyAppData("2026-05-22T09:00:00.000Z");
 
   assert.equal(data.version, 1);
+  assert.equal(data.createdAt, "2026-05-22T09:00:00.000Z");
+  assert.equal(data.updatedAt, "2026-05-22T09:00:00.000Z");
   assert.deepEqual(data.goalCards, []);
   assert.deepEqual(data.behaviorEvents, []);
   assert.deepEqual(data.dailySnapshots, []);
@@ -28,6 +30,7 @@ test("existing MVP data migrates to setup-completed data", () => {
   assert.equal(migrated.setup.completedAt, "2026-05-22T10:00:00.000Z");
   assert.equal(migrated.setup.skippedAt, null);
   assert.equal(migrated.setup.draft, null);
+  assert.deepEqual(migrated.goalCards, mvpData.goalCards);
   assert.equal(migrated.goalCards.length > 0, true);
   assert.equal(validateAppData(migrated).ok, true);
 });
