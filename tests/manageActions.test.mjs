@@ -123,3 +123,50 @@ test("manage action ids do not collide for repeated submissions with same input 
   assert.notEqual(firstLink.id, secondLink.id);
   assert.notEqual(firstRule.id, secondRule.id);
 });
+
+test("manage action fallback ids do not collide without crypto randomUUID", () => {
+  withFallbackIdGeneration(() => {
+    const data = createInitialData(NOW);
+    const firstCard = addGoalCard(data, { title: "Launch checklist" }, LATER).goalCards.at(-1);
+    const secondCard = addGoalCard(data, { title: "Launch checklist" }, LATER).goalCards.at(-1);
+    const firstLink = addLinkToCard(data, "card-focus-anchor-mvp", {
+      label: "Design notes",
+      url: "https://example.com/design"
+    }, LATER).goalCards.find((card) => card.id === "card-focus-anchor-mvp").links.at(-1);
+    const secondLink = addLinkToCard(data, "card-focus-anchor-mvp", {
+      label: "Design notes",
+      url: "https://example.com/design"
+    }, LATER).goalCards.find((card) => card.id === "card-focus-anchor-mvp").links.at(-1);
+    const ruleInput = {
+      type: "routine",
+      titleTemplate: "Plan next week",
+      schedule: { cadence: "weekly", weekdays: [1], startDate: "2026-05-25" }
+    };
+    const firstRule = addRuleToCard(data, "card-weekly-planning", ruleInput, LATER)
+      .goalCards.find((card) => card.id === "card-weekly-planning").rules.at(-1);
+    const secondRule = addRuleToCard(data, "card-weekly-planning", ruleInput, LATER)
+      .goalCards.find((card) => card.id === "card-weekly-planning").rules.at(-1);
+
+    assert.notEqual(firstCard.id, secondCard.id);
+    assert.notEqual(firstLink.id, secondLink.id);
+    assert.notEqual(firstRule.id, secondRule.id);
+  });
+});
+
+function withFallbackIdGeneration(run) {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: {}
+  });
+
+  try {
+    run();
+  } finally {
+    if (descriptor) {
+      Object.defineProperty(globalThis, "crypto", descriptor);
+    } else {
+      delete globalThis.crypto;
+    }
+  }
+}

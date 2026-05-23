@@ -1,5 +1,7 @@
 import { GOAL_STATUSES, GOAL_TYPES, LINK_KINDS, RULE_TYPES } from "./schema.js";
 
+let fallbackIdCounter = 0;
+
 export function addGoalCard(data, input, nowIso = new Date().toISOString()) {
   const title = trim(input?.title);
   if (!title) return data;
@@ -177,11 +179,11 @@ function makeId(prefix, nowIso, label, offset, existingIds) {
     return candidate;
   }
 
-  let candidate = `${readable}-${Date.parse(nowIso)}-${offset}`;
-  let probe = 1;
+  let candidate = `${readable}-${Date.parse(nowIso)}-${offset}-${fallbackIdCounter}`;
+  fallbackIdCounter += 1;
   while (existingIds.has(candidate)) {
-    candidate = `${readable}-${Date.parse(nowIso)}-${offset}-${probe}`;
-    probe += 1;
+    candidate = `${readable}-${Date.parse(nowIso)}-${offset}-${fallbackIdCounter}`;
+    fallbackIdCounter += 1;
   }
   return candidate;
 }
