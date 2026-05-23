@@ -87,7 +87,7 @@ function convertTodayItems(items, cardId, nowIso, todayKey) {
   return items
     .filter((item) => hasText(item?.title))
     .map((item, index) => ({
-      id: stableId("item", item.title, index),
+      id: stableId("item", `${cardId}-${item.title}`, index),
       goalCardId: cardId,
       title: trimText(item.title),
       status: "open",
@@ -105,7 +105,7 @@ function convertLinks(links, cardId, nowIso) {
   return links
     .filter((link) => hasText(link?.label) && hasText(link?.url))
     .map((link, index) => ({
-      id: stableId("link", link.label, index),
+      id: stableId("link", `${cardId}-${link.label}`, index),
       goalCardId: cardId,
       label: trimText(link.label),
       url: trimText(link.url),
@@ -121,7 +121,7 @@ function convertRules(card, cardId, nowIso, todayKey) {
 
   if (hasText(card.routine?.title)) {
     rules.push({
-      id: stableId("rule", card.routine.title, rules.length),
+      id: stableId("rule", `${cardId}-${card.routine.title}`, rules.length),
       goalCardId: cardId,
       type: "routine",
       titleTemplate: trimText(card.routine.title),
@@ -139,7 +139,7 @@ function convertRules(card, cardId, nowIso, todayKey) {
 
   if (hasText(card.dateReminder?.title) && hasText(card.dateReminder?.date)) {
     rules.push({
-      id: stableId("rule", card.dateReminder.title, rules.length),
+      id: stableId("rule", `${cardId}-${card.dateReminder.title}`, rules.length),
       goalCardId: cardId,
       type: "date_triggered_check",
       titleTemplate: trimText(card.dateReminder.title),

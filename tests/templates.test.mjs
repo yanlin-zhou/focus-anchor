@@ -106,6 +106,33 @@ test("date check template creates a date-triggered reminder", () => {
   assert.deepEqual(rule.schedule, { date: "2026-05-30" });
 });
 
+test("setup conversion creates unique child ids across cards", () => {
+  const firstCard = {
+    ...createDraftCardFromTemplate("routine_work", NOW),
+    title: "Ops review",
+    items: [{ title: "Review", scheduledFor: TODAY }],
+    links: [{ label: "Dashboard", url: "https://example.com/ops" }],
+    routine: { title: "Review", cadence: "weekly", weekdays: [5], startDate: TODAY }
+  };
+  const secondCard = {
+    ...createDraftCardFromTemplate("routine_work", NOW),
+    title: "Launch review",
+    items: [{ title: "Review", scheduledFor: TODAY }],
+    links: [{ label: "Dashboard", url: "https://example.com/launch" }],
+    routine: { title: "Review", cadence: "weekly", weekdays: [5], startDate: TODAY }
+  };
+
+  const data = completeSetupDraft(createDraft({ cards: [firstCard, secondCard] }), NOW, TODAY);
+  const itemIds = data.goalCards.flatMap((card) => card.todayItems.map((item) => item.id));
+  const linkIds = data.goalCards.flatMap((card) => card.links.map((link) => link.id));
+  const ruleIds = data.goalCards.flatMap((card) => card.rules.map((rule) => rule.id));
+
+  assert.equal(new Set(itemIds).size, itemIds.length);
+  assert.equal(new Set(linkIds).size, linkIds.length);
+  assert.equal(new Set(ruleIds).size, ruleIds.length);
+  assert.equal(validateAppData(data).ok, true);
+});
+
 test("completed setup draft creates valid app data", () => {
   const card = {
     ...createDraftCardFromTemplate("project_progress", NOW),
