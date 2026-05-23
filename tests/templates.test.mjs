@@ -133,6 +133,36 @@ test("setup conversion creates unique child ids across cards", () => {
   assert.equal(validateAppData(data).ok, true);
 });
 
+test("setup conversion preserves parent uniqueness for long card titles", () => {
+  const sharedPrefix = "Quarterly platform migration readiness review alpha beta gamma";
+  const firstCard = {
+    ...createDraftCardFromTemplate("routine_work", NOW),
+    title: `${sharedPrefix} operations`,
+    items: [{ title: "Review", scheduledFor: TODAY }],
+    links: [{ label: "Dashboard", url: "https://example.com/ops" }],
+    routine: { title: "Review", cadence: "weekly", weekdays: [5], startDate: TODAY },
+    dateReminder: { title: "Review", date: "2026-05-30" }
+  };
+  const secondCard = {
+    ...createDraftCardFromTemplate("routine_work", NOW),
+    title: `${sharedPrefix} launch`,
+    items: [{ title: "Review", scheduledFor: TODAY }],
+    links: [{ label: "Dashboard", url: "https://example.com/launch" }],
+    routine: { title: "Review", cadence: "weekly", weekdays: [5], startDate: TODAY },
+    dateReminder: { title: "Review", date: "2026-05-30" }
+  };
+
+  const data = completeSetupDraft(createDraft({ cards: [firstCard, secondCard] }), NOW, TODAY);
+  const itemIds = data.goalCards.flatMap((card) => card.todayItems.map((item) => item.id));
+  const linkIds = data.goalCards.flatMap((card) => card.links.map((link) => link.id));
+  const ruleIds = data.goalCards.flatMap((card) => card.rules.map((rule) => rule.id));
+
+  assert.equal(new Set(itemIds).size, itemIds.length);
+  assert.equal(new Set(linkIds).size, linkIds.length);
+  assert.equal(new Set(ruleIds).size, ruleIds.length);
+  assert.equal(validateAppData(data).ok, true);
+});
+
 test("completed setup draft creates valid app data", () => {
   const card = {
     ...createDraftCardFromTemplate("project_progress", NOW),
