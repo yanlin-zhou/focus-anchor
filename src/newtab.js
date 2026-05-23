@@ -1,11 +1,14 @@
-import { createInitialData } from "./domain/sampleData.js";
+import { createEmptyAppData, ensureSetupMeta, getSetupState } from "./domain/emptyData.js";
 import { nextLocalDateKey, toLocalDateKey } from "./domain/date.js";
 import { generateDueTodayItems } from "./domain/rules.js";
 import { buildHomeModel } from "./domain/ranking.js";
 import { upsertDailySnapshot } from "./domain/snapshots.js";
+import { completeSetupDraft, createDraft, createDraftCardFromTemplate } from "./domain/templates.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { toViewModel } from "./ui/viewModel.js";
 import { mountApp } from "./ui/render.js";
+import { renderNotSetUpHtml, renderSetupHtml } from "./ui/setupRender.js";
+import { toSetupViewModel } from "./ui/setupViewModel.js";
 import { addTodayItem, completeTodayItem, pinCard, snoozeCard } from "./ui/actions.js";
 
 const app = document.querySelector("#app");
@@ -15,13 +18,7 @@ const uiState = {
   expandedCardIds: new Set(),
   backlogExpanded: false
 };
-let appData = await repo.load();
-
-if (!appData) {
-  appData = createInitialData(new Date().toISOString());
-  await repo.save(appData);
-}
-
+let appData = ensureSetupMeta(await repo.load());
 await refresh();
 
 app.addEventListener("click", async (event) => {
@@ -30,6 +27,67 @@ app.addEventListener("click", async (event) => {
 
   const action = target.dataset.action;
   const nowIso = new Date().toISOString();
+
+  if (action === "start-setup") {
+    appData = createEmptyAppData(nowIso);
+    appData.setup.draft = createDraft();
+    await repo.save(appData);
+    await refresh();
+    return;
+  }
+
+  if (action === "add-template-card") {
+    const base = ensureSetupMeta(appData ?? createEmptyAppData(nowIso), nowIso);
+    const draft = base.setup?.draft ?? createDraft();
+    const card = createDraftCardFromTemplate(target.dataset.templateId, nowIso);
+    appData = {
+      ...base,
+      updatedAt: nowIso,
+      setup: {
+        ...base.setup,
+        draft: {
+          ...draft,
+          cards: [...(draft.cards ?? []), card],
+          activeCardId: card.id
+        }
+      }
+    };
+    await repo.save(appData);
+    await refresh();
+    return;
+  }
+
+  if (action === "finish-setup") {
+    if (!appData?.setup?.draft) return;
+    const todayKey = toLocalDateKey(nowIso);
+    appData = completeSetupDraft(appData.setup.draft, nowIso, todayKey);
+    await repo.save(appData);
+    await refresh();
+    return;
+  }
+
+  if (action === "quick-add-empty") {
+    const title = window.prompt("One thing worth protecting today");
+    if (!title?.trim()) return;
+    const todayKey = toLocalDateKey(nowIso);
+    const card = {
+      ...createDraftCardFromTemplate("project_progress", nowIso),
+      title: "Today",
+      items: [{ title: title.trim(), scheduledFor: todayKey }]
+    };
+    appData = completeSetupDraft(createDraft({ cards: [card], activeCardId: card.id }), nowIso, todayKey);
+    await repo.save(appData);
+    await refresh();
+    return;
+  }
+
+  if (action === "open-manage") {
+    const manageUrl = chrome.runtime?.getURL ? chrome.runtime.getURL("src/manage.html") : "/src/manage.html";
+    chrome.tabs.create({ url: manageUrl, active: true });
+    return;
+  }
+
+  if (getSetupState(appData) !== "complete") return;
 
   if (action === "complete-item") {
     const itemId = target.dataset.itemId;
@@ -90,6 +148,18 @@ app.addEventListener("click", async (event) => {
 
 async function refresh() {
   const nowIso = new Date().toISOString();
+  const state = getSetupState(appData);
+
+  if (state === "not_set_up" || state === "skipped") {
+    app.innerHTML = renderNotSetUpHtml();
+    return;
+  }
+
+  if (state === "in_progress") {
+    app.innerHTML = renderSetupHtml(toSetupViewModel(appData.setup.draft, nowIso));
+    return;
+  }
+
   const todayKey = toLocalDateKey(nowIso);
   const generated = generateDueTodayItems(appData, todayKey, nowIso);
   appData = generated.data;

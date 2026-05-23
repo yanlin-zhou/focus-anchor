@@ -38,6 +38,14 @@ test("rendered html includes collapsed cards and a collapsed backlog", () => {
   assert.match(html, /Expand/);
 });
 
+test("rendered home includes a lightweight Manage entry point", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
+  const html = renderAppHtml(toViewModel(homeModel, "2026-05-22T09:12:00.000Z"));
+
+  assert.match(html, /data-action="open-manage"/);
+  assert.match(html, />Manage</);
+});
+
 test("rendered html shows expanded card details and expanded backlog on demand", () => {
   const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
   const expandedId = homeModel.focusCards[0].id;

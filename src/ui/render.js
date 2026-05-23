@@ -5,6 +5,7 @@ export function renderAppHtml(viewModel) {
       <div class="top-actions">
         <span>${escapeHtml(viewModel.dateLabel)}</span>
         <span>Snapshot saved</span>
+        <button class="button" data-action="open-manage">Manage</button>
         <button class="button primary" data-action="quick-add">Quick Add</button>
       </div>
     </header>
