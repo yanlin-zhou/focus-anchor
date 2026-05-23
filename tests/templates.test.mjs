@@ -36,7 +36,41 @@ test("setup draft requires at least one card and one today item", () => {
   assert.deepEqual(validateSetupDraft(cardOnly).errors, ["Add at least one today item."]);
 });
 
+test("setup draft rejects cards with blank titles", () => {
+  const card = {
+    ...createDraftCardFromTemplate("project_progress", NOW),
+    title: " ",
+    items: [{ title: "Ship no-code setup", scheduledFor: TODAY }]
+  };
+
+  assert.deepEqual(validateSetupDraft(createDraft({ cards: [card] })).errors, ["Add a title for each focus card."]);
+  assert.throws(
+    () => completeSetupDraft(createDraft({ cards: [card] }), NOW, TODAY),
+    /Add a title for each focus card\./
+  );
+});
+
+test("setup draft rejects cards with invalid types", () => {
+  const card = {
+    ...createDraftCardFromTemplate("project_progress", NOW),
+    type: "wishlist",
+    items: [{ title: "Ship no-code setup", scheduledFor: TODAY }]
+  };
+
+  assert.deepEqual(validateSetupDraft(createDraft({ cards: [card] })).errors, ["Choose a valid type for each focus card."]);
+  assert.throws(
+    () => completeSetupDraft(createDraft({ cards: [card] }), NOW, TODAY),
+    /Choose a valid type for each focus card\./
+  );
+});
+
 test("routine template creates weekly and biweekly rules", () => {
+  const weeklyCard = {
+    ...createDraftCardFromTemplate("routine_work", NOW),
+    title: "Weekly planning",
+    items: [{ title: "Plan week", scheduledFor: TODAY }],
+    routine: { title: "Plan week", cadence: "weekly", weekdays: [1], startDate: TODAY }
+  };
   const card = {
     ...createDraftCardFromTemplate("routine_work", NOW),
     title: "Biweekly report",
@@ -44,9 +78,13 @@ test("routine template creates weekly and biweekly rules", () => {
     routine: { title: "Polish report", cadence: "biweekly", weekdays: [4], startDate: TODAY }
   };
 
-  const data = completeSetupDraft(createDraft({ cards: [card] }), NOW, TODAY);
-  const rule = data.goalCards[0].rules[0];
+  const data = completeSetupDraft(createDraft({ cards: [weeklyCard, card] }), NOW, TODAY);
+  const weeklyRule = data.goalCards[0].rules[0];
+  const rule = data.goalCards[1].rules[0];
 
+  assert.equal(weeklyRule.type, "routine");
+  assert.equal(weeklyRule.titleTemplate, "Plan week");
+  assert.deepEqual(weeklyRule.schedule, { cadence: "weekly", weekdays: [1], startDate: TODAY });
   assert.equal(rule.type, "routine");
   assert.equal(rule.titleTemplate, "Polish report");
   assert.deepEqual(rule.schedule, { cadence: "biweekly", weekdays: [4], startDate: TODAY });

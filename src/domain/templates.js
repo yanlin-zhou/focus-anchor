@@ -1,5 +1,5 @@
 import { createEmptyAppData } from "./emptyData.js";
-import { LINK_KINDS } from "./schema.js";
+import { GOAL_TYPES, LINK_KINDS } from "./schema.js";
 
 export const SETUP_TEMPLATES = [
   { id: "project_progress", label: "Project Progress", type: "project", importance: 4 },
@@ -39,6 +39,8 @@ export function validateSetupDraft(draft) {
 
   if (cards.length === 0) errors.push("Add at least one focus card.");
   if (cards.length > 5) errors.push("Keep setup to 5 focus cards or fewer.");
+  if (cards.some((card) => !hasText(card?.title))) errors.push("Add a title for each focus card.");
+  if (cards.some((card) => !GOAL_TYPES.includes(card?.type))) errors.push("Choose a valid type for each focus card.");
   if (!cards.some((card) => (card.items ?? []).some((item) => hasText(item?.title)))) {
     errors.push("Add at least one today item.");
   }
