@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createInitialData } from "../src/domain/sampleData.js";
+import { renderManageHtml } from "../src/ui/manageRender.js";
 import { toManageViewModel } from "../src/ui/manageViewModel.js";
 
 const NOW = "2026-05-22T09:00:00.000Z";
@@ -33,4 +34,29 @@ test("toManageViewModel handles empty app data", () => {
   assert.deepEqual(viewModel.rules, []);
   assert.equal(viewModel.selectedCard, null);
   assert.equal(viewModel.summary.cards, 0);
+});
+
+test("renderManageHtml renders manage shell sections and data actions", () => {
+  const html = renderManageHtml(toManageViewModel(createInitialData(NOW)));
+
+  assert.match(html, /Manage Focus Anchor/);
+  assert.match(html, /data-section="cards"/);
+  assert.match(html, /data-section="rules"/);
+  assert.match(html, /data-section="data"/);
+  assert.match(html, /Export JSON/);
+  assert.match(html, /Import JSON/);
+  assert.match(html, /type RESET/);
+});
+
+test("renderManageHtml escapes card text", () => {
+  const data = createInitialData(NOW);
+  data.goalCards[0] = {
+    ...data.goalCards[0],
+    title: "\"><script>alert(1)</script>"
+  };
+
+  const html = renderManageHtml(toManageViewModel(data));
+
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
 });
