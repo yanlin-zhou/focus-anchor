@@ -8,6 +8,6 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/newtab.js && node --check src/domain/schema.js && node --check src/domain/date.js && node --check src/domain/rules.js && node --check src/domain/ranking.js && node --check src/domain/snapshots.js && node --check src/domain/events.js && node --check src/domain/emptyData.js && node --check src/domain/importExport.js && node --check src/domain/templates.js && node --check src/storage/repository.js && node --check src/ui/viewModel.js && node --check src/ui/render.js && node --check src/ui/setupViewModel.js && node --check src/ui/setupRender.js && node --check src/ui/actions.js"
+    "check": "node --check src/newtab.js && node --check src/domain/schema.js && node --check src/domain/date.js && node --check src/domain/rules.js && node --check src/domain/ranking.js && node --check src/domain/snapshots.js && node --check src/domain/events.js && node --check src/domain/emptyData.js && node --check src/domain/importExport.js && node --check src/domain/templates.js && node --check src/domain/manageActions.js && node --check src/storage/repository.js && node --check src/ui/viewModel.js && node --check src/ui/render.js && node --check src/ui/setupViewModel.js && node --check src/ui/setupRender.js && node --check src/ui/actions.js && node --check src/ui/manageViewModel.js"
   }
 }
