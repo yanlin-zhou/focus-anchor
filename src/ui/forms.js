@@ -7,6 +7,7 @@ export function readCheckbox(form, name) {
 }
 
 export function readNumber(value, fallback = 0) {
+  if (typeof value === "string" && value.trim() === "") return fallback;
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
 }

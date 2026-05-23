@@ -19,11 +19,12 @@ app.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const fields = readFormData(form);
+  const currentCard = appData.goalCards.find((card) => card.id === form.dataset.cardId);
   appData = updateGoalCard(appData, form.dataset.cardId, {
     title: fields.title,
     type: fields.type,
     status: fields.status,
-    importance: readNumber(fields.importance, 3),
+    importance: readNumber(fields.importance, currentCard?.importance ?? 3),
     pinned: readCheckbox(form, "pinned"),
     snoozedUntil: fields.snoozedUntil,
     sortReason: fields.sortReason
