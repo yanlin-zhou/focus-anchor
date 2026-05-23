@@ -14,3 +14,23 @@ test("toManageViewModel exposes cards, rules, summary, and sections", () => {
   assert.equal(viewModel.summary.links, 7);
   assert.equal(viewModel.sections.map((section) => section.id).join(","), "cards,rules,data");
 });
+
+test("toManageViewModel handles null app data", () => {
+  const viewModel = toManageViewModel(null);
+
+  assert.deepEqual(viewModel.cards, []);
+  assert.deepEqual(viewModel.rules, []);
+  assert.equal(viewModel.selectedCard, null);
+  assert.equal(viewModel.summary.cards, 0);
+  assert.equal(viewModel.summary.links, 0);
+  assert.equal(viewModel.sections.map((section) => section.id).join(","), "cards,rules,data");
+});
+
+test("toManageViewModel handles empty app data", () => {
+  const viewModel = toManageViewModel({ goalCards: [], behaviorEvents: [], dailySnapshots: [] });
+
+  assert.deepEqual(viewModel.cards, []);
+  assert.deepEqual(viewModel.rules, []);
+  assert.equal(viewModel.selectedCard, null);
+  assert.equal(viewModel.summary.cards, 0);
+});

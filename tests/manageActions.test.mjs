@@ -51,6 +51,20 @@ test("addLinkToCard adds a valid link to a goal card", () => {
   assert.equal(validateAppData(next).ok, true);
 });
 
+test("addLinkToCard rejects invalid and disallowed URL schemes", () => {
+  const data = createInitialData(NOW);
+
+  for (const url of ["javascript:alert(1)", "data:text/html,hello", "not a url"]) {
+    const next = addLinkToCard(data, "card-focus-anchor-mvp", {
+      label: "Unsafe",
+      url,
+      kind: "doc"
+    }, LATER);
+
+    assert.equal(next, data);
+  }
+});
+
 test("addRuleToCard adds weekly routine and date-triggered check rules", () => {
   const data = createInitialData(NOW);
   const withRoutine = addRuleToCard(data, "card-weekly-planning", {
@@ -70,4 +84,42 @@ test("addRuleToCard adds weekly routine and date-triggered check rules", () => {
   assert.equal(card.rules.at(-1).type, "date_triggered_check");
   assert.deepEqual(card.rules.at(-1).schedule, { date: "2026-06-01" });
   assert.equal(validateAppData(withDateCheck).ok, true);
+});
+
+test("addRuleToCard rejects routine rules without weekdays", () => {
+  const data = createInitialData(NOW);
+  const next = addRuleToCard(data, "card-weekly-planning", {
+    type: "routine",
+    titleTemplate: "Plan next week",
+    schedule: { cadence: "weekly", weekdays: [], startDate: "2026-05-25" }
+  }, LATER);
+
+  assert.equal(next, data);
+});
+
+test("manage action ids do not collide for repeated submissions with same input and time", () => {
+  const data = createInitialData(NOW);
+  const firstCard = addGoalCard(data, { title: "Launch checklist" }, LATER).goalCards.at(-1);
+  const secondCard = addGoalCard(data, { title: "Launch checklist" }, LATER).goalCards.at(-1);
+  const firstLink = addLinkToCard(data, "card-focus-anchor-mvp", {
+    label: "Design notes",
+    url: "https://example.com/design"
+  }, LATER).goalCards.find((card) => card.id === "card-focus-anchor-mvp").links.at(-1);
+  const secondLink = addLinkToCard(data, "card-focus-anchor-mvp", {
+    label: "Design notes",
+    url: "https://example.com/design"
+  }, LATER).goalCards.find((card) => card.id === "card-focus-anchor-mvp").links.at(-1);
+  const ruleInput = {
+    type: "routine",
+    titleTemplate: "Plan next week",
+    schedule: { cadence: "weekly", weekdays: [1], startDate: "2026-05-25" }
+  };
+  const firstRule = addRuleToCard(data, "card-weekly-planning", ruleInput, LATER)
+    .goalCards.find((card) => card.id === "card-weekly-planning").rules.at(-1);
+  const secondRule = addRuleToCard(data, "card-weekly-planning", ruleInput, LATER)
+    .goalCards.find((card) => card.id === "card-weekly-planning").rules.at(-1);
+
+  assert.notEqual(firstCard.id, secondCard.id);
+  assert.notEqual(firstLink.id, secondLink.id);
+  assert.notEqual(firstRule.id, secondRule.id);
 });

@@ -1,8 +1,16 @@
 import { summarizeAppData } from "../domain/importExport.js";
 
-export function toManageViewModel(data, selectedCardId = data.goalCards[0]?.id ?? null) {
-  const selectedCard = data.goalCards.find((card) => card.id === selectedCardId)
-    ?? data.goalCards[0]
+export function toManageViewModel(data, selectedCardId = null) {
+  const goalCards = Array.isArray(data?.goalCards) ? data.goalCards : [];
+  const safeData = {
+    ...data,
+    goalCards,
+    behaviorEvents: Array.isArray(data?.behaviorEvents) ? data.behaviorEvents : [],
+    dailySnapshots: Array.isArray(data?.dailySnapshots) ? data.dailySnapshots : []
+  };
+  const resolvedSelectedCardId = selectedCardId ?? goalCards[0]?.id ?? null;
+  const selectedCard = goalCards.find((card) => card.id === resolvedSelectedCardId)
+    ?? goalCards[0]
     ?? null;
 
   return {
@@ -11,7 +19,7 @@ export function toManageViewModel(data, selectedCardId = data.goalCards[0]?.id ?
       { id: "rules", label: "Rules" },
       { id: "data", label: "Data" }
     ],
-    cards: data.goalCards.map((card) => ({
+    cards: goalCards.map((card) => ({
       id: card.id,
       title: card.title,
       type: card.type,
@@ -22,10 +30,10 @@ export function toManageViewModel(data, selectedCardId = data.goalCards[0]?.id ?
       ruleCount: Array.isArray(card.rules) ? card.rules.length : 0
     })),
     selectedCard,
-    rules: data.goalCards.flatMap((card) => (Array.isArray(card.rules) ? card.rules : []).map((rule) => ({
+    rules: goalCards.flatMap((card) => (Array.isArray(card.rules) ? card.rules : []).map((rule) => ({
       ...rule,
       goalTitle: card.title
     }))),
-    summary: summarizeAppData(data)
+    summary: summarizeAppData(safeData)
   };
 }

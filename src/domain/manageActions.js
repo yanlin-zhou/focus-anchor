@@ -3,9 +3,10 @@ import { GOAL_STATUSES, GOAL_TYPES, LINK_KINDS, RULE_TYPES } from "./schema.js";
 export function addGoalCard(data, input, nowIso = new Date().toISOString()) {
   const title = trim(input?.title);
   if (!title) return data;
+  const existingIds = collectIds(data);
 
   const card = {
-    id: makeId("card", nowIso, title, data.goalCards.length),
+    id: makeId("card", nowIso, title, data.goalCards.length, existingIds),
     title,
     type: normalizeChoice(input?.type, GOAL_TYPES, "project"),
     importance: normalizeImportance(input?.importance),
@@ -61,14 +62,15 @@ export function updateGoalCard(data, cardId, patch = {}, nowIso = new Date().toI
 export function addLinkToCard(data, cardId, input, nowIso = new Date().toISOString()) {
   const label = trim(input?.label);
   const url = trim(input?.url);
-  if (!label || !url) return data;
+  if (!label || !isAllowedUrl(url)) return data;
+  const existingIds = collectIds(data);
 
   return updateCard(data, cardId, nowIso, (card) => ({
     ...card,
     links: [
       ...card.links,
       {
-        id: makeId("link", nowIso, label, card.links.length),
+        id: makeId("link", nowIso, label, card.links.length, existingIds),
         goalCardId: card.id,
         label,
         url,
@@ -88,13 +90,14 @@ export function addRuleToCard(data, cardId, input, nowIso = new Date().toISOStri
 
   const schedule = normalizeRuleSchedule(type, input?.schedule);
   if (!schedule) return data;
+  const existingIds = collectIds(data);
 
   return updateCard(data, cardId, nowIso, (card) => ({
     ...card,
     rules: [
       ...card.rules,
       {
-        id: makeId("rule", nowIso, titleTemplate, card.rules.length),
+        id: makeId("rule", nowIso, titleTemplate, card.rules.length, existingIds),
         goalCardId: card.id,
         type,
         titleTemplate,
@@ -133,7 +136,7 @@ function normalizeRuleSchedule(type, schedule = {}) {
       ? safeSchedule.weekdays.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
       : [];
     const startDate = trim(safeSchedule.startDate);
-    if (!startDate) return null;
+    if (!startDate || weekdays.length === 0) return null;
     return { cadence, weekdays, startDate };
   }
 
@@ -155,8 +158,32 @@ function trim(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function makeId(prefix, nowIso, label, offset) {
-  return `${prefix}-${Date.parse(nowIso)}-${slugify(label)}-${offset}`;
+function isAllowedUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function makeId(prefix, nowIso, label, offset, existingIds) {
+  const readable = `${prefix}-${slugify(label)}`;
+  if (globalThis.crypto?.randomUUID) {
+    let candidate = `${readable}-${globalThis.crypto.randomUUID()}`;
+    while (existingIds.has(candidate)) {
+      candidate = `${readable}-${globalThis.crypto.randomUUID()}`;
+    }
+    return candidate;
+  }
+
+  let candidate = `${readable}-${Date.parse(nowIso)}-${offset}`;
+  let probe = 1;
+  while (existingIds.has(candidate)) {
+    candidate = `${readable}-${Date.parse(nowIso)}-${offset}-${probe}`;
+    probe += 1;
+  }
+  return candidate;
 }
 
 function slugify(value) {
@@ -171,4 +198,15 @@ function hasCardChanges(before, after) {
     || before.pinned !== after.pinned
     || before.snoozedUntil !== after.snoozedUntil
     || before.sortReason !== after.sortReason;
+}
+
+function collectIds(data) {
+  const ids = new Set();
+  for (const card of data.goalCards) {
+    ids.add(card.id);
+    for (const item of card.todayItems) ids.add(item.id);
+    for (const link of card.links) ids.add(link.id);
+    for (const rule of card.rules) ids.add(rule.id);
+  }
+  return ids;
 }
