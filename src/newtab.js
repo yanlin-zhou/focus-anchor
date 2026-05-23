@@ -3,7 +3,7 @@ import { nextLocalDateKey, toLocalDateKey } from "./domain/date.js";
 import { generateDueTodayItems } from "./domain/rules.js";
 import { buildHomeModel } from "./domain/ranking.js";
 import { upsertDailySnapshot } from "./domain/snapshots.js";
-import { completeSetupDraft, createDraft, createDraftCardFromTemplate } from "./domain/templates.js";
+import { SETUP_TEMPLATES, completeSetupDraft, createDraft, createDraftCardFromTemplate } from "./domain/templates.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { toViewModel } from "./ui/viewModel.js";
 import { mountApp } from "./ui/render.js";
@@ -37,9 +37,11 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "add-template-card") {
+    const templateId = target.dataset.templateId;
+    if (!SETUP_TEMPLATES.some((template) => template.id === templateId)) return;
     const base = ensureSetupMeta(appData ?? createEmptyAppData(nowIso), nowIso);
     const draft = base.setup?.draft ?? createDraft();
-    const card = createDraftCardFromTemplate(target.dataset.templateId, nowIso);
+    const card = createDraftCardFromTemplate(templateId, nowIso);
     appData = {
       ...base,
       updatedAt: nowIso,
@@ -82,8 +84,13 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "open-manage") {
-    const manageUrl = chrome.runtime?.getURL ? chrome.runtime.getURL("src/manage.html") : "/src/manage.html";
-    chrome.tabs.create({ url: manageUrl, active: true });
+    const manageUrl = globalThis.chrome?.runtime?.getURL?.("src/manage.html") ?? "/src/manage.html";
+    const createTab = globalThis.chrome?.tabs?.create;
+    if (createTab) {
+      createTab({ url: manageUrl, active: true });
+    } else {
+      window.location.assign(manageUrl);
+    }
     return;
   }
 
