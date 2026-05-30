@@ -110,13 +110,13 @@ test("new tab ignores modified and editable keyboard shortcuts", async (t) => {
   assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
 });
 
-test("new tab opens safe shortcut urls in a new tab", async (t) => {
+test("new tab opens shortcut slots without exposing urls in the DOM action", async (t) => {
   const appData = createInitialData(NOW);
   const harness = await loadNewtabHarness(appData);
   t.after(harness.restore);
 
-  await harness.click({ action: "open-shortcut", shortcutUrl: "https://mail.google.com/" });
-  await harness.click({ action: "open-shortcut", shortcutUrl: "javascript:alert(1)" });
+  await harness.click({ action: "open-shortcut", shortcutSlot: "1" });
+  await harness.click({ action: "open-shortcut", shortcutSlot: "999" });
 
   assert.deepEqual(harness.createdTabs, [{ url: "https://mail.google.com/", active: true }]);
 });

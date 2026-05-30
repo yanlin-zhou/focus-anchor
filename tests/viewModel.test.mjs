@@ -239,16 +239,30 @@ test("default safe home does not leak title-derived peek ids", () => {
 });
 
 test("default rendered home does not include sensitive focus text", () => {
-  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
-  const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+  const data = createInitialData("2026-05-30T09:12:00.000Z");
+  data.shortcuts[0] = {
+    ...data.shortcuts[0],
+    id: "shortcut-internal-doc",
+    label: "Work Doc",
+    url: "https://internal.example.com/private/priority-plan"
+  };
+  const homeModel = buildHomeModel(data, "2026-05-30");
+  const viewModel = toViewModel(homeModel, "2026-05-30T09:12:00.000Z");
+  const html = renderAppHtml(viewModel);
+  const serializedSafeHome = JSON.stringify(viewModel.safeHome);
 
   assert.match(html, /Reveal focus/);
-  assert.match(html, /Gmail/);
+  assert.match(html, /Work Doc/);
   assert.match(html, /Calendar/);
-  assert.match(html, /<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-url="https:\/\/mail\.google\.com\/">Gmail<\/button>/);
-  assert.match(html, /data-action="open-shortcut" data-shortcut-url="https:\/\/calendar\.google\.com\/"/);
+  assert.match(html, /data-action="open-shortcut" data-shortcut-slot="1"/);
+  assert.match(html, /data-action="open-shortcut" data-shortcut-slot="2"/);
+  assert.doesNotMatch(serializedSafeHome, /internal\.example\.com/);
+  assert.doesNotMatch(serializedSafeHome, /shortcut-internal-doc/);
+  assert.doesNotMatch(html, /internal\.example\.com/);
+  assert.doesNotMatch(html, /shortcut-internal-doc/);
+  assert.doesNotMatch(html, /data-shortcut-url=/);
   assert.doesNotMatch(html, /<a class="shortcut"/);
-  assert.doesNotMatch(html, /href="https:\/\/mail\.google\.com\//);
+  assert.doesNotMatch(html, /href="https:\/\//);
   assert.doesNotMatch(html, /Polish narrative and risks section/);
   assert.doesNotMatch(html, /Biweekly report/);
   assert.doesNotMatch(html, /Top 3 Today Items/);

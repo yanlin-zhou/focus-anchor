@@ -4,6 +4,7 @@ import { generateDueTodayItems } from "./domain/rules.js";
 import { buildHomeModel } from "./domain/ranking.js";
 import { upsertDailySnapshot } from "./domain/snapshots.js";
 import { isAllowedLinkUrl } from "./domain/schema.js";
+import { pinnedShortcuts } from "./domain/shortcuts.js";
 import { SETUP_TEMPLATES, completeSetupDraft, createDraft, createDraftCardFromTemplate } from "./domain/templates.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { toViewModel } from "./ui/viewModel.js";
@@ -142,7 +143,7 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "open-shortcut") {
-    const url = target.dataset.shortcutUrl;
+    const url = shortcutUrlForSlot(target.dataset.shortcutSlot);
     if (!isAllowedLinkUrl(url)) return;
     globalThis.chrome?.tabs?.create?.({ url, active: true });
     return;
@@ -285,6 +286,12 @@ function showCompletionReward(button) {
   toast.classList.remove("show");
   void toast.offsetWidth;
   toast.classList.add("show");
+}
+
+function shortcutUrlForSlot(slotValue) {
+  const slot = Number(slotValue);
+  if (!Number.isInteger(slot) || slot < 1) return "";
+  return pinnedShortcuts(appData?.shortcuts, 6)[slot - 1]?.url ?? "";
 }
 
 function toggleExpandedCard(cardId) {

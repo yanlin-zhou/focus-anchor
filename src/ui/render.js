@@ -42,8 +42,8 @@ export function mountApp(container, viewModel) {
 }
 
 function renderShortcut(shortcut) {
-  if (!isAllowedLinkUrl(shortcut.url)) return "";
-  return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-url="${escapeHtml(shortcut.url)}">${escapeHtml(shortcut.label)}</button>`;
+  if (!shortcut.label || !shortcut.slot) return "";
+  return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">${escapeHtml(shortcut.label)}</button>`;
 }
 
 function renderPeekItem(item) {

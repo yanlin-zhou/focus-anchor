@@ -133,7 +133,7 @@ app.addEventListener("change", async (event) => {
     }
 
     const importSummary = result.summary;
-    summary.textContent = `${importSummary.cards} cards, ${importSummary.openItems} open items, ${importSummary.rules} rules, ${importSummary.snapshots} snapshots`;
+    summary.textContent = `${importSummary.cards} cards, ${importSummary.openItems} open items, ${importSummary.rules} rules, ${importSummary.shortcuts} shortcuts, ${importSummary.snapshots} snapshots`;
     pendingImport = result;
     confirmButton.disabled = false;
   } catch {
