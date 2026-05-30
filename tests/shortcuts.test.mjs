@@ -120,8 +120,9 @@ test("pinnedShortcuts filters unsafe and unpinned entries while preserving order
     { id: "shortcut-three", label: "Three", url: "https://three.example", pinned: true, position: 6 }
   ];
 
-  const pinned = pinnedShortcuts(shortcuts, 6);
+  const pinned = pinnedShortcuts(shortcuts, 2);
 
-  assert.deepEqual(pinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two", "shortcut-three"]);
+  assert.deepEqual(pinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two"]);
+  assert.equal(pinned.length, 2);
   assert.equal(pinned.every((shortcut) => shortcut.pinned), true);
 });
