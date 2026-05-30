@@ -68,18 +68,46 @@ test("new tab hides revealed focus on timer, escape, and blur", async (t) => {
 
   await harness.click({ action: "reveal-focus" });
   assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
-  harness.runLatestTimeout();
+  assert.equal(harness.timeoutCalls.at(-1)?.delay, 20_000);
+  await harness.runLatestTimeout();
   assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
 
   await harness.keydown("f");
   assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
+  const firstRevealTimer = harness.timeoutCalls.at(-1)?.id;
+  await harness.keydown("/");
+  assert.deepEqual(harness.clearedTimeouts, []);
   await harness.keydown("Escape");
+  assert.deepEqual(harness.clearedTimeouts, [firstRevealTimer]);
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+
+  await harness.keydown("/");
+  assert.deepEqual(harness.clearedTimeouts, [firstRevealTimer]);
+  assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
+  await harness.blur();
+  assert.deepEqual(harness.clearedTimeouts, [firstRevealTimer, harness.timeoutCalls.at(-1)?.id]);
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+});
+
+test("new tab ignores modified and editable keyboard shortcuts", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.keydown("f", { metaKey: true });
+  await harness.keydown("f", { ctrlKey: true });
+  await harness.keydown("/", { altKey: true });
+  await harness.keydown("f", { shiftKey: true });
+  await harness.keydown("f", { isComposing: true });
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+
+  await harness.keydown("f", { target: { tagName: "INPUT" } });
   assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
 
   await harness.keydown("/");
   assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
-  await harness.blur();
-  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+  await harness.keydown("Escape", { target: { isContentEditable: true } });
+  assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
 });
 
 test("new tab opens safe shortcut urls in a new tab", async (t) => {
@@ -103,6 +131,8 @@ async function loadNewtabHarness(initialData) {
   const documentListeners = new Map();
   const windowListeners = new Map();
   const timeoutCallbacks = [];
+  const timeoutCalls = [];
+  const clearedTimeouts = [];
   const app = {
     innerHTML: "",
     addEventListener(type, listener) {
@@ -150,10 +180,14 @@ async function loadNewtabHarness(initialData) {
     addEventListener(type, listener) {
       windowListeners.set(type, listener);
     },
-    clearTimeout: () => {},
-    setTimeout(callback) {
+    clearTimeout(id) {
+      clearedTimeouts.push(id);
+    },
+    setTimeout(callback, delay) {
       timeoutCallbacks.push(callback);
-      return timeoutCallbacks.length;
+      const id = timeoutCallbacks.length;
+      timeoutCalls.push({ id, delay });
+      return id;
     },
     prompt: () => ""
   };
@@ -168,8 +202,10 @@ async function loadNewtabHarness(initialData) {
   return {
     app,
     assignedUrls,
+    clearedTimeouts,
     createdTabs,
     storage,
+    timeoutCalls,
     async click(dataset) {
       const listener = listeners.get("click");
       assert.equal(typeof listener, "function");
@@ -182,20 +218,20 @@ async function loadNewtabHarness(initialData) {
         }
       });
     },
-    async keydown(key) {
+    async keydown(key, eventOptions = {}) {
       const listener = documentListeners.get("keydown");
       assert.equal(typeof listener, "function");
-      await listener({ key });
+      await listener({ key, ...eventOptions });
     },
     async blur() {
       const listener = windowListeners.get("blur");
       assert.equal(typeof listener, "function");
       await listener();
     },
-    runLatestTimeout() {
+    async runLatestTimeout() {
       const callback = timeoutCallbacks.at(-1);
       assert.equal(typeof callback, "function");
-      callback();
+      await callback();
     },
     restore() {
       globalThis.Date = originalDate;

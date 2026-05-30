@@ -222,6 +222,7 @@ app.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("keydown", async (event) => {
+  if (shouldIgnoreGlobalShortcut(event)) return;
   if (getSetupState(appData) !== "complete") return;
   if (event.key === "Escape" && uiState.focusRevealed) {
     hideFocus();
@@ -259,8 +260,8 @@ async function refresh() {
   appData = generated.data;
   const homeModel = buildHomeModel(appData, todayKey);
   appData = upsertDailySnapshot(appData, todayKey, homeModel, completedIdsForToday(appData, todayKey));
-  mountApp(app, toViewModel(homeModel, nowIso, uiState));
   await repo.save(appData);
+  mountApp(app, toViewModel(homeModel, nowIso, uiState));
 }
 
 function completedIdsForToday(data, todayKey) {
@@ -308,6 +309,7 @@ function hideFocus() {
 function scheduleRevealHide() {
   clearRevealTimer();
   revealTimerId = window.setTimeout(async () => {
+    revealTimerId = null;
     uiState.focusRevealed = false;
     await refresh();
   }, REVEAL_DURATION_MS);
@@ -318,4 +320,26 @@ function clearRevealTimer() {
     window.clearTimeout?.(revealTimerId);
     revealTimerId = null;
   }
+}
+
+function shouldIgnoreGlobalShortcut(event) {
+  return Boolean(
+    event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      isEditableTarget(event.target)
+  );
+}
+
+function isEditableTarget(target) {
+  const element = target?.nodeType === 1 ? target : target?.parentElement ?? target;
+  if (!element) return false;
+  if (element.isContentEditable) return true;
+
+  const tagName = element.tagName?.toLowerCase?.();
+  if (tagName === "input" || tagName === "textarea" || tagName === "select") return true;
+
+  return Boolean(element.closest?.("[contenteditable='true'], [contenteditable='plaintext-only'], [contenteditable='']"));
 }
