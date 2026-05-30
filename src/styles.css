@@ -1108,6 +1108,7 @@ button:disabled {
 .manage-list,
 .manage-detail,
 .manage-rules,
+.manage-shortcuts,
 .manage-data {
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -1119,6 +1120,7 @@ button:disabled {
 }
 
 .manage-rules,
+.manage-shortcuts,
 .manage-data {
   grid-column: 1 / -1;
 }
@@ -1168,12 +1170,14 @@ button:disabled {
   font-weight: 650;
 }
 
-.card-editor {
+.card-editor,
+.shortcut-editor {
   display: grid;
   gap: 13px;
 }
 
 .card-editor label,
+.shortcut-editor label,
 .danger-zone label {
   display: grid;
   gap: 6px;
@@ -1185,6 +1189,7 @@ button:disabled {
 .card-editor input,
 .card-editor select,
 .card-editor textarea,
+.shortcut-editor input,
 .danger-zone input {
   width: 100%;
   border: 1px solid var(--border);
@@ -1196,6 +1201,25 @@ button:disabled {
 
 .card-editor textarea {
   resize: vertical;
+}
+
+.manage-shortcuts {
+  display: grid;
+  gap: 14px;
+}
+
+.shortcut-editor-list {
+  display: grid;
+  gap: 12px;
+}
+
+.shortcut-editor {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(61, 47, 29, 0.12);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 252, 246, 0.72);
 }
 
 .form-row {

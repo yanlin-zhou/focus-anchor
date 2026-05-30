@@ -21,6 +21,7 @@ export function renderManageHtml(viewModel) {
             ${viewModel.cards.length > 0 ? viewModel.cards.map((card) => renderCardRow(card, viewModel.selectedCard?.id)).join("") : `<p class="empty-line">No cards saved yet.</p>`}
           </section>
           ${renderSelectedCard(viewModel.selectedCard)}
+          ${renderShortcutsSection(viewModel.shortcuts)}
           <section class="manage-rules" data-section="rules" aria-label="Rules">
             <div class="section-head"><span>Rules</span><span>${escapeHtml(viewModel.rules.length)} active checks</span></div>
             ${viewModel.rules.length > 0 ? viewModel.rules.map(renderRule).join("") : `<p class="empty-line">No rules saved yet.</p>`}
@@ -109,6 +110,45 @@ function renderSelectedCard(card) {
   `;
 }
 
+function renderShortcutsSection(shortcuts = []) {
+  return `
+    <section class="manage-shortcuts" data-section="shortcuts" aria-label="Shortcuts">
+      <div class="section-head"><span>Shortcuts</span><span>${escapeHtml(shortcuts.length)} saved</span></div>
+      <div class="shortcut-editor-list">
+        ${shortcuts.length > 0 ? shortcuts.map(renderShortcutEditor).join("") : `<p class="empty-line">No shortcuts saved yet.</p>`}
+      </div>
+      <button class="button" type="button" data-action="reset-shortcuts">Reset shortcuts</button>
+    </section>
+  `;
+}
+
+function renderShortcutEditor(shortcut) {
+  return `
+    <form class="shortcut-editor" data-action="save-shortcut" data-shortcut-id="${escapeHtml(shortcut.id)}">
+      <div class="section-head"><span>${escapeHtml(shortcut.label)}</span><span>${escapeHtml(shortcut.id)}</span></div>
+      <label>
+        <span>Label</span>
+        <input name="label" value="${escapeHtml(shortcut.label)}" autocomplete="off">
+      </label>
+      <label>
+        <span>URL</span>
+        <input name="url" type="url" value="${escapeHtml(shortcut.url)}" autocomplete="off">
+      </label>
+      <div class="form-row">
+        <label>
+          <span>Position</span>
+          <input name="position" type="number" min="1" value="${escapeHtml(shortcut.position)}">
+        </label>
+        <label class="checkbox-field">
+          <input name="pinned" type="checkbox"${shortcut.pinned ? " checked" : ""}>
+          <span>Pinned</span>
+        </label>
+      </div>
+      <button class="button primary" type="submit">Save shortcut</button>
+    </form>
+  `;
+}
+
 function renderRule(rule) {
   return `
     <article class="rule-row">
@@ -179,6 +219,7 @@ function labelForRuleType(type) {
 function labelForSummary(key) {
   return ({
     cards: "Cards",
+    shortcuts: "Shortcuts",
     links: "Links",
     rules: "Rules",
     openItems: "Open items",

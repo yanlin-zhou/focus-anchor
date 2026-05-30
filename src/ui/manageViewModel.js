@@ -1,12 +1,16 @@
 import { summarizeAppData } from "../domain/importExport.js";
+import { ensureShortcuts } from "../domain/shortcuts.js";
 
 export function toManageViewModel(data, selectedCardId = null) {
-  const goalCards = Array.isArray(data?.goalCards) ? data.goalCards : [];
+  const normalizedData = ensureShortcuts(data ?? {});
+  const goalCards = Array.isArray(normalizedData?.goalCards) ? normalizedData.goalCards : [];
+  const shortcuts = Array.isArray(normalizedData?.shortcuts) ? normalizedData.shortcuts : [];
   const safeData = {
-    ...data,
+    ...normalizedData,
     goalCards,
-    behaviorEvents: Array.isArray(data?.behaviorEvents) ? data.behaviorEvents : [],
-    dailySnapshots: Array.isArray(data?.dailySnapshots) ? data.dailySnapshots : []
+    shortcuts,
+    behaviorEvents: Array.isArray(normalizedData?.behaviorEvents) ? normalizedData.behaviorEvents : [],
+    dailySnapshots: Array.isArray(normalizedData?.dailySnapshots) ? normalizedData.dailySnapshots : []
   };
   const resolvedSelectedCardId = selectedCardId ?? goalCards[0]?.id ?? null;
   const selectedCard = goalCards.find((card) => card.id === resolvedSelectedCardId)
@@ -16,6 +20,7 @@ export function toManageViewModel(data, selectedCardId = null) {
   return {
     sections: [
       { id: "cards", label: "Cards" },
+      { id: "shortcuts", label: "Shortcuts" },
       { id: "rules", label: "Rules" },
       { id: "data", label: "Data" }
     ],
@@ -29,6 +34,7 @@ export function toManageViewModel(data, selectedCardId = null) {
       linkCount: Array.isArray(card.links) ? card.links.length : 0,
       ruleCount: Array.isArray(card.rules) ? card.rules.length : 0
     })),
+    shortcuts,
     selectedCard,
     rules: goalCards.flatMap((card) => (Array.isArray(card.rules) ? card.rules : []).map((rule) => ({
       ...rule,
