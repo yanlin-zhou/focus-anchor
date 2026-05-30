@@ -48,12 +48,14 @@ export function parseImportJson(text, nowIso = new Date().toISOString()) {
 
 export function summarizeAppData(data) {
   const goalCards = Array.isArray(data.goalCards) ? data.goalCards : [];
+  const shortcuts = Array.isArray(data.shortcuts) ? data.shortcuts : [];
   const behaviorEvents = Array.isArray(data.behaviorEvents) ? data.behaviorEvents : [];
   const dailySnapshots = Array.isArray(data.dailySnapshots) ? data.dailySnapshots : [];
   const todayItems = goalCards.flatMap((card) => Array.isArray(card.todayItems) ? card.todayItems : []);
 
   return {
     cards: goalCards.length,
+    shortcuts: shortcuts.length,
     links: goalCards.reduce((count, card) => count + (Array.isArray(card.links) ? card.links.length : 0), 0),
     rules: goalCards.reduce((count, card) => count + (Array.isArray(card.rules) ? card.rules.length : 0), 0),
     openItems: todayItems.filter((item) => item.status === "open").length,

@@ -1,9 +1,12 @@
+import { createDefaultShortcuts, ensureShortcuts } from "./shortcuts.js";
+
 export function createEmptyAppData(nowIso = new Date().toISOString()) {
   return {
     version: 1,
     createdAt: nowIso,
     updatedAt: nowIso,
     goalCards: [],
+    shortcuts: createDefaultShortcuts(nowIso),
     behaviorEvents: [],
     dailySnapshots: [],
     setup: createSetupMeta()
@@ -24,18 +27,18 @@ export function ensureSetupMeta(data, nowIso = new Date().toISOString()) {
   if (data === null) return null;
 
   if (data.setup !== undefined) {
-    return {
+    return ensureShortcuts({
       ...data,
       setup: createSetupMeta(data.setup)
-    };
+    }, nowIso);
   }
 
-  return {
+  return ensureShortcuts({
     ...data,
     setup: createSetupMeta({
       completedAt: data.goalCards?.length > 0 ? nowIso : null
     })
-  };
+  }, nowIso);
 }
 
 export function markSetupSkipped(data, nowIso = new Date().toISOString()) {
