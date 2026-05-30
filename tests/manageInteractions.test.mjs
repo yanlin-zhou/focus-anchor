@@ -31,11 +31,35 @@ test("manage page saves shortcut edits and resets shortcuts", async (t) => {
   let saved = harness.storage.saved.at(-1)["focus-anchor-data"];
   let shortcut = saved.shortcuts.find((entry) => entry.id === "shortcut-gmail");
   assert.equal(shortcut.label, "Mail");
+  assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
   assert.equal(shortcut.pinned, false);
+  assert.equal(shortcut.position, 4);
 
   await harness.click({ action: "reset-shortcuts" });
   saved = harness.storage.saved.at(-1)["focus-anchor-data"];
   assert.equal(saved.shortcuts.find((entry) => entry.id === "shortcut-gmail").label, "Gmail");
+});
+
+test("manage page migrates missing shortcuts before saving shortcut edits", async (t) => {
+  const data = createInitialData(NOW);
+  delete data.shortcuts;
+  const harness = await loadManageHarness(data);
+  t.after(harness.restore);
+
+  await harness.submitShortcut("shortcut-gmail", {
+    label: "Mail",
+    url: "https://mail.google.com/mail/u/0/",
+    pinned: false,
+    position: "4"
+  });
+
+  const saved = harness.storage.saved.at(-1)["focus-anchor-data"];
+  const shortcut = saved.shortcuts.find((entry) => entry.id === "shortcut-gmail");
+  assert.equal(Array.isArray(saved.shortcuts), true);
+  assert.equal(shortcut.label, "Mail");
+  assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
+  assert.equal(shortcut.pinned, false);
+  assert.equal(shortcut.position, 4);
 });
 
 async function loadManageHarness(initialData) {

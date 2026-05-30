@@ -1,6 +1,6 @@
 import { parseImportJson, serializeExportData } from "./domain/importExport.js";
 import { updateGoalCard } from "./domain/manageActions.js";
-import { resetShortcuts, updateShortcut } from "./domain/shortcuts.js";
+import { ensureShortcuts, resetShortcuts, updateShortcut } from "./domain/shortcuts.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { readCheckbox, readFormData, readNumber } from "./ui/forms.js";
 import { renderManageHtml } from "./ui/manageRender.js";
@@ -9,7 +9,7 @@ import { toManageViewModel } from "./ui/manageViewModel.js";
 const app = document.querySelector("#manage-app");
 const repo = createChromeRepository();
 
-let appData = await repo.load();
+let appData = normalizeAppData(await repo.load());
 let selectedCardId = appData?.goalCards?.[0]?.id ?? null;
 let pendingImport = null;
 
@@ -41,6 +41,7 @@ app.addEventListener("submit", async (event) => {
   if (!shortcutForm || !appData) return;
   event.preventDefault();
 
+  appData = ensureShortcuts(appData);
   const fields = readFormData(shortcutForm);
   const currentShortcut = appData.shortcuts?.find((shortcut) => shortcut.id === shortcutForm.dataset.shortcutId);
   appData = updateShortcut(appData, shortcutForm.dataset.shortcutId, {
@@ -79,14 +80,14 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "reset-shortcuts") {
-    appData = resetShortcuts(appData);
+    appData = resetShortcuts(ensureShortcuts(appData));
     await repo.save(appData);
     render();
     return;
   }
 
   if (action === "confirm-import" && pendingImport?.data) {
-    appData = pendingImport.data;
+    appData = normalizeAppData(pendingImport.data);
     pendingImport = null;
     selectedCardId = appData.goalCards?.[0]?.id ?? null;
     await repo.save(appData);
@@ -166,6 +167,10 @@ function render() {
     selectedCardId = appData.goalCards?.[0]?.id ?? null;
   }
   app.innerHTML = renderManageHtml(toManageViewModel(appData, selectedCardId));
+}
+
+function normalizeAppData(data) {
+  return data ? ensureShortcuts(data) : data;
 }
 
 function downloadJson(text) {
