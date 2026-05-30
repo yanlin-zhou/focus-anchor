@@ -19,7 +19,7 @@ export function toViewModel(homeModel, nowIso, uiState = {}) {
         : `${readyCount} ready ${readyCount === 1 ? "item" : "items"} hidden`,
       metaLine: `Focus hidden - Backlog ${backlogExpanded ? "available" : "collapsed"}`,
       peekItems: homeModel.topTodayItems.map((item, index) => ({
-        id: `peek-${item.id}`,
+        id: `peek-${index + 1}`,
         rank: index + 1,
         type: item.goalType,
         label: labelForType(item.goalType)

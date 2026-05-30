@@ -6,7 +6,7 @@ import { buildHomeModel } from "../src/domain/ranking.js";
 import { toViewModel } from "../src/ui/viewModel.js";
 import { renderAppHtml } from "../src/ui/render.js";
 
-test("view model keeps Top 3 as the first execution surface", () => {
+test("view model keeps Safe Home first and Top 3 reveal-only", () => {
   const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
   const viewModel = toViewModel(homeModel, "2026-05-22T09:12:00.000Z");
 
@@ -191,6 +191,51 @@ test("safe home view model excludes sensitive task and card titles", () => {
   assert.match(serializedSafeHome, /anchors ready/);
   assert.equal(viewModel.safeHome.peekItems.length, 3);
   assert.equal(viewModel.safeHome.shortcuts.length, 6);
+});
+
+test("default safe home does not leak title-derived peek ids", () => {
+  const nowIso = "2026-05-30T09:12:00.000Z";
+  const todayKey = "2026-05-30";
+  const data = createInitialData(nowIso);
+  data.goalCards.push({
+    id: "card-prepare-layoffs-memo",
+    title: "Leadership memo",
+    type: "project",
+    importance: 5,
+    status: "active",
+    pinned: true,
+    snoozedUntil: null,
+    sortReason: "",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    completedAt: null,
+    todayItems: [
+      {
+        id: "item-prepare-layoffs-memo",
+        goalCardId: "card-prepare-layoffs-memo",
+        title: "Prepare layoffs memo",
+        status: "open",
+        source: "manual",
+        scheduledFor: todayKey,
+        doneAt: null,
+        skippedAt: null,
+        note: "",
+        createdAt: nowIso,
+        updatedAt: nowIso
+      }
+    ],
+    links: [],
+    rules: []
+  });
+  const homeModel = buildHomeModel(data, todayKey);
+  const viewModel = toViewModel(homeModel, nowIso);
+  const serializedSafeHome = JSON.stringify(viewModel.safeHome);
+  const html = renderAppHtml(viewModel);
+
+  assert.doesNotMatch(serializedSafeHome, /Prepare layoffs memo/);
+  assert.doesNotMatch(serializedSafeHome, /prepare-layoffs-memo/);
+  assert.doesNotMatch(html, /Prepare layoffs memo/);
+  assert.doesNotMatch(html, /prepare-layoffs-memo/);
 });
 
 test("default rendered home does not include sensitive focus text", () => {
