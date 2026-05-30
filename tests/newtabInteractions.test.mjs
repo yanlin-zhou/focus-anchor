@@ -47,6 +47,52 @@ test("new tab open-all ignores unsafe link URLs", async (t) => {
   assert.deepEqual(harness.createdTabs, [{ url: "https://example.com", active: false }]);
 });
 
+test("new tab reveals and hides focus drawer intentionally", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+
+  await harness.click({ action: "reveal-focus" });
+  assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
+
+  await harness.click({ action: "hide-focus" });
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+});
+
+test("new tab hides revealed focus on timer, escape, and blur", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.click({ action: "reveal-focus" });
+  assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
+  harness.runLatestTimeout();
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+
+  await harness.keydown("f");
+  assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
+  await harness.keydown("Escape");
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+
+  await harness.keydown("/");
+  assert.match(harness.app.innerHTML, /Polish narrative and risks section/);
+  await harness.blur();
+  assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
+});
+
+test("new tab opens safe shortcut urls in a new tab", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.click({ action: "open-shortcut", shortcutUrl: "https://mail.google.com/" });
+  await harness.click({ action: "open-shortcut", shortcutUrl: "javascript:alert(1)" });
+
+  assert.deepEqual(harness.createdTabs, [{ url: "https://mail.google.com/", active: true }]);
+});
+
 
 async function loadNewtabHarness(initialData) {
   const originalDocument = globalThis.document;
@@ -54,6 +100,9 @@ async function loadNewtabHarness(initialData) {
   const originalChrome = globalThis.chrome;
   const originalDate = globalThis.Date;
   const listeners = new Map();
+  const documentListeners = new Map();
+  const windowListeners = new Map();
+  const timeoutCallbacks = [];
   const app = {
     innerHTML: "",
     addEventListener(type, listener) {
@@ -87,6 +136,9 @@ async function loadNewtabHarness(initialData) {
       if (selector === "#app") return app;
       if (selector === "#completion-toast") return null;
       return null;
+    },
+    addEventListener(type, listener) {
+      documentListeners.set(type, listener);
     }
   };
   globalThis.window = {
@@ -95,7 +147,14 @@ async function loadNewtabHarness(initialData) {
         assignedUrls.push(url);
       }
     },
-    setTimeout: originalWindow?.setTimeout ?? globalThis.setTimeout,
+    addEventListener(type, listener) {
+      windowListeners.set(type, listener);
+    },
+    clearTimeout: () => {},
+    setTimeout(callback) {
+      timeoutCallbacks.push(callback);
+      return timeoutCallbacks.length;
+    },
     prompt: () => ""
   };
   globalThis.chrome = {
@@ -122,6 +181,21 @@ async function loadNewtabHarness(initialData) {
           }
         }
       });
+    },
+    async keydown(key) {
+      const listener = documentListeners.get("keydown");
+      assert.equal(typeof listener, "function");
+      await listener({ key });
+    },
+    async blur() {
+      const listener = windowListeners.get("blur");
+      assert.equal(typeof listener, "function");
+      await listener();
+    },
+    runLatestTimeout() {
+      const callback = timeoutCallbacks.at(-1);
+      assert.equal(typeof callback, "function");
+      callback();
     },
     restore() {
       globalThis.Date = originalDate;
