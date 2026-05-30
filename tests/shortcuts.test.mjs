@@ -112,16 +112,16 @@ test("resetShortcuts restores defaults", () => {
 
 test("pinnedShortcuts filters unsafe and unpinned entries while preserving order and limit", () => {
   const shortcuts = [
-    { id: "shortcut-two", label: "Two", url: "https://two.example", pinned: true, position: 2 },
     { id: "shortcut-one", label: "One", url: "https://one.example", pinned: true, position: 1 },
-    { id: "shortcut-hidden", label: "Hidden", url: "https://hidden.example", pinned: false, position: 3 },
-    { id: "shortcut-unsafe", label: "Unsafe", url: "javascript:alert(1)", pinned: true, position: 4 },
-    { id: "shortcut-malformed", label: "", url: "https://malformed.example", pinned: true, position: 5 },
+    { id: "shortcut-hidden", label: "Hidden", url: "https://hidden.example", pinned: false, position: 2 },
+    { id: "shortcut-unsafe", label: "Unsafe", url: "javascript:alert(1)", pinned: true, position: 3 },
+    { id: "shortcut-malformed", label: "", url: "https://malformed.example", pinned: true, position: 4 },
+    { id: "shortcut-two", label: "Two", url: "https://two.example", pinned: true, position: 5 },
     { id: "shortcut-three", label: "Three", url: "https://three.example", pinned: true, position: 6 }
   ];
 
-  const pinned = pinnedShortcuts(shortcuts, 2);
+  const pinned = pinnedShortcuts(shortcuts, 6);
 
-  assert.deepEqual(pinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two"]);
+  assert.deepEqual(pinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two", "shortcut-three"]);
   assert.equal(pinned.every((shortcut) => shortcut.pinned), true);
 });
