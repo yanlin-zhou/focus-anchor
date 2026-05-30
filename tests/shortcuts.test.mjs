@@ -4,6 +4,7 @@ import {
   DEFAULT_SHORTCUTS,
   createDefaultShortcuts,
   ensureShortcuts,
+  pinnedShortcuts,
   resetShortcuts,
   updateShortcut
 } from "../src/domain/shortcuts.js";
@@ -81,6 +82,21 @@ test("updateShortcut edits safe fields and rejects unsafe urls", () => {
   assert.equal(rejected, updated);
 });
 
+test("updateShortcut moves shortcut to requested position", () => {
+  const data = ensureShortcuts(createEmptyAppData(NOW), NOW);
+  const updated = updateShortcut(data, "shortcut-calendar", {
+    position: 3
+  }, "2026-05-30T11:00:00.000Z");
+
+  assert.deepEqual(updated.shortcuts.map((shortcut) => shortcut.id).slice(0, 4), [
+    "shortcut-gmail",
+    "shortcut-drive",
+    "shortcut-calendar",
+    "shortcut-maps"
+  ]);
+  assert.equal(updated.shortcuts.find((shortcut) => shortcut.id === "shortcut-calendar").position, 3);
+});
+
 test("resetShortcuts restores defaults", () => {
   const data = {
     ...ensureShortcuts(createEmptyAppData(NOW), NOW),
@@ -92,4 +108,20 @@ test("resetShortcuts restores defaults", () => {
   assert.deepEqual(reset.shortcuts.map((shortcut) => shortcut.id), createDefaultShortcuts(NOW).map((shortcut) => shortcut.id));
   assert.equal(reset.shortcuts[0].updatedAt, "2026-05-30T13:00:00.000Z");
   assert.equal(reset.updatedAt, "2026-05-30T13:00:00.000Z");
+});
+
+test("pinnedShortcuts filters unsafe and unpinned entries while preserving order and limit", () => {
+  const shortcuts = [
+    { id: "shortcut-two", label: "Two", url: "https://two.example", pinned: true, position: 2 },
+    { id: "shortcut-one", label: "One", url: "https://one.example", pinned: true, position: 1 },
+    { id: "shortcut-hidden", label: "Hidden", url: "https://hidden.example", pinned: false, position: 3 },
+    { id: "shortcut-unsafe", label: "Unsafe", url: "javascript:alert(1)", pinned: true, position: 4 },
+    { id: "shortcut-malformed", label: "", url: "https://malformed.example", pinned: true, position: 5 },
+    { id: "shortcut-three", label: "Three", url: "https://three.example", pinned: true, position: 6 }
+  ];
+
+  const pinned = pinnedShortcuts(shortcuts, 2);
+
+  assert.deepEqual(pinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two"]);
+  assert.equal(pinned.every((shortcut) => shortcut.pinned), true);
 });

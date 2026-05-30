@@ -28,12 +28,20 @@ export function validateAppData(data) {
   }
 
   for (const shortcut of data.shortcuts ?? []) {
-    if (!shortcut.id) errors.push("shortcut missing id");
-    if (!shortcut.label) errors.push(`shortcut ${shortcut.id} missing label`);
-    if (!shortcut.url) errors.push(`shortcut ${shortcut.id} missing url`);
-    if (shortcut.url && !isAllowedLinkUrl(shortcut.url)) errors.push(`shortcut ${shortcut.id} has invalid url`);
-    if (typeof shortcut.pinned !== "boolean") errors.push(`shortcut ${shortcut.id} pinned must be boolean`);
-    if (!Number.isInteger(shortcut.position) || shortcut.position < 1) errors.push(`shortcut ${shortcut.id} position must be a positive integer`);
+    const shortcutId = shortcut?.id;
+    const shortcutLabel = shortcut?.label;
+    const shortcutUrl = shortcut?.url;
+    const shortcutName = shortcutId ?? "unknown";
+
+    if (typeof shortcutId !== "string") errors.push("shortcut id must be a string");
+    else if (!shortcutId) errors.push("shortcut missing id");
+    if (typeof shortcutLabel !== "string") errors.push(`shortcut ${shortcutName} label must be a string`);
+    else if (!shortcutLabel) errors.push(`shortcut ${shortcutName} missing label`);
+    if (typeof shortcutUrl !== "string") errors.push(`shortcut ${shortcutName} url must be a string`);
+    else if (!shortcutUrl) errors.push(`shortcut ${shortcutName} missing url`);
+    else if (!isAllowedLinkUrl(shortcutUrl)) errors.push(`shortcut ${shortcutName} has invalid url`);
+    if (typeof shortcut?.pinned !== "boolean") errors.push(`shortcut ${shortcutName} pinned must be boolean`);
+    if (!Number.isInteger(shortcut?.position) || shortcut.position < 1) errors.push(`shortcut ${shortcutName} position must be a positive integer`);
   }
 
   for (const card of data.goalCards ?? []) {

@@ -35,7 +35,8 @@ export function ensureShortcuts(data, nowIso = new Date().toISOString()) {
 }
 
 export function updateShortcut(data, shortcutId, patch = {}, nowIso = new Date().toISOString()) {
-  const shortcut = data.shortcuts?.find((entry) => entry.id === shortcutId);
+  const shortcuts = normalizeShortcuts(data.shortcuts ?? [], nowIso);
+  const shortcut = shortcuts.find((entry) => entry.id === shortcutId);
   if (!shortcut) return data;
 
   const label = "label" in patch ? trim(patch.label) : shortcut.label;
@@ -47,16 +48,18 @@ export function updateShortcut(data, shortcutId, patch = {}, nowIso = new Date()
     label,
     url,
     pinned: "pinned" in patch ? Boolean(patch.pinned) : shortcut.pinned,
-    position: "position" in patch ? normalizePosition(patch.position) : shortcut.position,
     updatedAt: nowIso
   };
+  const shortcutsWithUpdate = "position" in patch
+    ? moveShortcut(shortcuts, shortcutId, nextShortcut, patch.position)
+    : normalizeShortcuts(shortcuts.map((entry) => (
+      entry.id === shortcutId ? nextShortcut : entry
+    )), nowIso);
 
   return {
     ...data,
     updatedAt: nowIso,
-    shortcuts: normalizeShortcuts(data.shortcuts.map((entry) => (
-      entry.id === shortcutId ? nextShortcut : entry
-    )), nowIso)
+    shortcuts: shortcutsWithUpdate
   };
 }
 
@@ -75,11 +78,25 @@ export function pinnedShortcuts(shortcuts, limit = 6) {
 }
 
 function normalizeShortcuts(shortcuts, nowIso = new Date().toISOString()) {
-  return shortcuts
+  return renumberShortcuts(shortcuts
     .map((shortcut, index) => normalizeShortcut(shortcut, index, nowIso))
     .filter(Boolean)
-    .sort((a, b) => a.position - b.position || a.label.localeCompare(b.label))
-    .map((shortcut, index) => ({ ...shortcut, position: index + 1 }));
+    .sort((a, b) => a.position - b.position || a.label.localeCompare(b.label)));
+}
+
+function moveShortcut(shortcuts, shortcutId, shortcut, requestedPosition) {
+  const remaining = shortcuts.filter((entry) => entry.id !== shortcutId);
+  const requestedIndex = normalizePosition(requestedPosition) - 1;
+  const clampedIndex = Math.min(Math.max(requestedIndex, 0), remaining.length);
+  return renumberShortcuts([
+    ...remaining.slice(0, clampedIndex),
+    shortcut,
+    ...remaining.slice(clampedIndex)
+  ]);
+}
+
+function renumberShortcuts(shortcuts) {
+  return shortcuts.map((shortcut, index) => ({ ...shortcut, position: index + 1 }));
 }
 
 function normalizeShortcut(shortcut, index, nowIso) {
