@@ -200,6 +200,10 @@ test("default rendered home does not include sensitive focus text", () => {
   assert.match(html, /Reveal focus/);
   assert.match(html, /Gmail/);
   assert.match(html, /Calendar/);
+  assert.match(html, /<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-url="https:\/\/mail\.google\.com\/">Gmail<\/button>/);
+  assert.match(html, /data-action="open-shortcut" data-shortcut-url="https:\/\/calendar\.google\.com\/"/);
+  assert.doesNotMatch(html, /<a class="shortcut"/);
+  assert.doesNotMatch(html, /href="https:\/\/mail\.google\.com\//);
   assert.doesNotMatch(html, /Polish narrative and risks section/);
   assert.doesNotMatch(html, /Biweekly report/);
   assert.doesNotMatch(html, /Top 3 Today Items/);

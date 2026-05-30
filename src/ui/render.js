@@ -43,7 +43,7 @@ export function mountApp(container, viewModel) {
 
 function renderShortcut(shortcut) {
   if (!isAllowedLinkUrl(shortcut.url)) return "";
-  return `<a class="shortcut" href="${escapeHtml(shortcut.url)}" target="_blank" rel="noreferrer" data-shortcut-id="${escapeHtml(shortcut.id)}">${escapeHtml(shortcut.label)}</a>`;
+  return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-url="${escapeHtml(shortcut.url)}">${escapeHtml(shortcut.label)}</button>`;
 }
 
 function renderPeekItem(item) {
