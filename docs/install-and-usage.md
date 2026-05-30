@@ -33,13 +33,13 @@ git pull --ff-only origin main
 6. 打开一个新标签页。
 7. 如果 Chrome 询问是否保留新的 New Tab 页面，选择保留。
 
-第一次安装成功后，新标签页会先显示 no-code setup。完成设置后，之后的新标签页会显示：
+第一次安装成功后，新标签页会先显示 no-code setup。完成设置后，之后的新标签页会默认显示 Safe Home：
 
-- 顶部一句自然语言 summary。
-- `Top 3 Today Items`：今天最应该先做的 3 件事。
-- `Focus Lane`：默认折叠的 3 张重点卡片。
-- `Backlog`：默认折叠，降低认知负担。
-- `Parking / Paused`：被暂停或 snooze 的卡片。
+- 安全摘要：只显示 `3 anchors ready`、`1 time-sensitive check today` 这类不泄密的信息。
+- `Focus Peek`：用抽象条目提醒你有 Top 3，但默认不显示任务名、项目名或排序原因。
+- `Reveal focus`：点击后才显示真实 Top 3 和卡片上下文。
+- Google-style shortcuts：Gmail、Calendar、Drive、Maps、Search、Lark 等快捷入口。
+- `Manage`：编辑卡片、数据和快捷入口。
 
 ## 3. 第一次无代码设置
 
@@ -75,10 +75,10 @@ git pull --ff-only origin main
 
 建议日常只按这个顺序用：
 
-1. 打开新标签页，看 `Today's anchor`。
-2. 先做 `Top 3 Today Items` 的第一项。
-3. 做完后点击 `Done`，让它从 Top 3 里消失。
-4. 如果需要上下文，点击卡片的 `Expand`，查看今天的事项和相关链接。
+1. 打开新标签页，先看 Safe Home 的安全摘要和 Focus Peek。
+2. 如果正在 share screen，可以直接使用快捷入口，不需要 reveal priorities。
+3. 如果准备开始做事，点击 `Reveal focus` 或按 `/` / `f` 打开真实 Top 3。
+4. 先做 Top 3 的第一项，做完后点击 `Done`。
 5. 如果要进入一组工作上下文，点击 `Open all` 打开这张卡片配置过的链接。
 6. 临时想到今天必须做的小事，点击 `Quick Add`。
 7. 如果某张卡今天不该打扰你，点击 `Snooze`，它会进入 Parking，明天再回来。
@@ -105,6 +105,7 @@ git pull --ff-only origin main
 - no-code setup 已支持创建卡片和 today item；规则编辑仍在 Manage 页面后续迭代。
 - 不会自动读取 Lark、日历、邮件或项目管理工具。
 - 不会同步到其他设备。
+- 屏幕共享不会自动检测；当前版本通过默认安全首页、主动 reveal 和自动隐藏来降低泄露风险。
 - AI 学习机制还没有启用，但已经记录了 `behaviorEvents` 和 `dailySnapshots`，后续可以基于这些数据做优先级回顾和自我迭代。
 
 ## 8. 开发者附录：sampleData fixture
