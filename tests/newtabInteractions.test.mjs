@@ -61,6 +61,21 @@ test("new tab reveals and hides focus drawer intentionally", async (t) => {
   assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
 });
 
+test("new tab toggles reviewed focus cards open and closed", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.click({ action: "reveal-focus" });
+  await harness.click({ action: "expand-card", cardId: "card-biweekly-report" });
+  assert.match(harness.app.innerHTML, /data-card-id="card-biweekly-report" data-card-expanded="true"/);
+  assert.match(harness.app.innerHTML, />Collapse</);
+
+  await harness.click({ action: "expand-card", cardId: "card-biweekly-report" });
+  assert.match(harness.app.innerHTML, /data-card-id="card-biweekly-report" data-card-expanded="false"/);
+  assert.match(harness.app.innerHTML, />Review focus</);
+});
+
 test("new tab hides revealed focus on timer, escape, and blur", async (t) => {
   const appData = createInitialData(NOW);
   const harness = await loadNewtabHarness(appData);

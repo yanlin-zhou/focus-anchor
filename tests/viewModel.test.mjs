@@ -39,7 +39,7 @@ test("rendered html includes collapsed cards and a collapsed backlog", () => {
 
   assert.match(html, /Top 3 Today Items/);
   assert.match(html, /Show backlog/);
-  assert.match(html, /Expand/);
+  assert.match(html, /Review focus/);
 });
 
 test("rendered home includes a lightweight Manage entry point", () => {
@@ -64,6 +64,17 @@ test("rendered html shows expanded card details and expanded backlog on demand",
   assert.match(html, /Card links/);
   assert.match(html, /Hide backlog/);
   assert.match(html, /backlog-expanded/);
+});
+
+test("expanded focus card keeps collapse action before expanded details", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-22T09:12:00.000Z"), "2026-05-22");
+  const expandedId = homeModel.focusCards[0].id;
+  const html = renderAppHtml(toViewModel(homeModel, "2026-05-22T09:12:00.000Z", {
+    focusRevealed: true,
+    expandedCardIds: new Set([expandedId])
+  }));
+
+  assert.ok(html.indexOf(">Collapse<") < html.indexOf(`class="card-expanded"`));
 });
 
 test("rendered html includes dynamic task and card actions", () => {

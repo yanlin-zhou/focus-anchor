@@ -118,10 +118,9 @@ function renderFocusCard(card) {
           <div class="collapsed-stat"><strong>${card.openItemCount}</strong>open items</div>
           <div class="collapsed-stat"><strong>${card.linkCount}</strong>links</div>
         </div>
-        ${card.expanded ? renderExpandedCard(card) : ""}
         <div class="card-footer">
           <div class="footer-group">
-            <button class="button primary" data-action="expand-card" data-card-id="${escapeHtml(card.id)}">${card.expanded ? "Collapse" : "Expand"}</button>
+            <button class="button primary" type="button" data-action="expand-card" data-card-id="${escapeHtml(card.id)}" aria-expanded="${card.expanded ? "true" : "false"}">${card.expanded ? "Collapse" : "Review focus"}</button>
             <button class="button text" data-action="open-all" data-card-id="${escapeHtml(card.id)}">Open all</button>
           </div>
           <div class="footer-group">
@@ -129,6 +128,7 @@ function renderFocusCard(card) {
             <button class="button" data-action="snooze-card" data-card-id="${escapeHtml(card.id)}">Snooze</button>
           </div>
         </div>
+        ${card.expanded ? renderExpandedCard(card) : ""}
       </div>
     </article>
   `;
