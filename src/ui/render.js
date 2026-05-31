@@ -120,7 +120,7 @@ function renderFocusCard(card) {
         </div>
         <div class="card-footer">
           <div class="footer-group">
-            <button class="button primary" type="button" data-action="expand-card" data-card-id="${escapeHtml(card.id)}" aria-expanded="${card.expanded ? "true" : "false"}">${card.expanded ? "Collapse" : "Review focus"}</button>
+            <button class="button primary" type="button" data-action="expand-card" data-card-id="${escapeHtml(card.id)}" aria-expanded="${card.expanded ? "true" : "false"}">${card.expanded ? "Hide" : "Review focus"}</button>
             <button class="button text" data-action="open-all" data-card-id="${escapeHtml(card.id)}">Open all</button>
           </div>
           <div class="footer-group">

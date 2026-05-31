@@ -69,7 +69,7 @@ test("new tab toggles reviewed focus cards open and closed", async (t) => {
   await harness.click({ action: "reveal-focus" });
   await harness.click({ action: "expand-card", cardId: "card-biweekly-report" });
   assert.match(harness.app.innerHTML, /data-card-id="card-biweekly-report" data-card-expanded="true"/);
-  assert.match(harness.app.innerHTML, />Collapse</);
+  assert.match(harness.app.innerHTML, /data-action="expand-card" data-card-id="card-biweekly-report" aria-expanded="true">Hide<\/button>/);
 
   await harness.click({ action: "expand-card", cardId: "card-biweekly-report" });
   assert.match(harness.app.innerHTML, /data-card-id="card-biweekly-report" data-card-expanded="false"/);
