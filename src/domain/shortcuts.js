@@ -1,12 +1,9 @@
 import { isAllowedLinkUrl } from "./schema.js";
 
 export const DEFAULT_SHORTCUTS = [
-  { id: "shortcut-gmail", label: "Gmail", url: "https://mail.google.com/" },
-  { id: "shortcut-calendar", label: "Calendar", url: "https://calendar.google.com/" },
-  { id: "shortcut-drive", label: "Drive", url: "https://drive.google.com/" },
   { id: "shortcut-maps", label: "Maps", url: "https://maps.google.com/" },
-  { id: "shortcut-search", label: "Search", url: "https://www.google.com/" },
-  { id: "shortcut-lark", label: "Lark", url: "https://www.larksuite.com/" }
+  { id: "shortcut-gmail", label: "Gmail", url: "https://mail.google.com/" },
+  { id: "shortcut-search", label: "Search", url: "https://www.google.com/" }
 ];
 
 export function createDefaultShortcuts(nowIso = new Date().toISOString()) {
@@ -71,7 +68,7 @@ export function resetShortcuts(data, nowIso = new Date().toISOString()) {
   };
 }
 
-export function pinnedShortcuts(shortcuts, limit = 6) {
+export function pinnedShortcuts(shortcuts, limit = 3) {
   return normalizeShortcuts(shortcuts ?? [])
     .filter((shortcut) => shortcut.pinned)
     .slice(0, limit);

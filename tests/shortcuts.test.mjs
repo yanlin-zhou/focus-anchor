@@ -12,21 +12,18 @@ import { createEmptyAppData } from "../src/domain/emptyData.js";
 
 const NOW = "2026-05-30T09:00:00.000Z";
 
-test("default shortcuts include Google apps and Lark in pinned order", () => {
+test("default shortcuts include Maps, Gmail, and Search in pinned order", () => {
   const shortcuts = createDefaultShortcuts(NOW);
 
   assert.deepEqual(shortcuts.map((shortcut) => shortcut.id), [
-    "shortcut-gmail",
-    "shortcut-calendar",
-    "shortcut-drive",
     "shortcut-maps",
-    "shortcut-search",
-    "shortcut-lark"
+    "shortcut-gmail",
+    "shortcut-search"
   ]);
-  assert.deepEqual(shortcuts.map((shortcut) => shortcut.position), [1, 2, 3, 4, 5, 6]);
+  assert.deepEqual(shortcuts.map((shortcut) => shortcut.position), [1, 2, 3]);
   assert.equal(shortcuts.every((shortcut) => shortcut.pinned === true), true);
   assert.equal(shortcuts.every((shortcut) => shortcut.createdAt === NOW), true);
-  assert.equal(DEFAULT_SHORTCUTS.length, 6);
+  assert.equal(DEFAULT_SHORTCUTS.length, 3);
 });
 
 test("ensureShortcuts migrates missing shortcuts without changing existing data identity fields", () => {
@@ -37,7 +34,7 @@ test("ensureShortcuts migrates missing shortcuts without changing existing data 
 
   assert.equal(migrated.version, 1);
   assert.equal(migrated.createdAt, NOW);
-  assert.equal(migrated.shortcuts.length, 6);
+  assert.equal(migrated.shortcuts.length, 3);
   assert.equal(migrated.updatedAt, "2026-05-30T10:00:00.000Z");
 });
 
@@ -84,17 +81,16 @@ test("updateShortcut edits safe fields and rejects unsafe urls", () => {
 
 test("updateShortcut moves shortcut to requested position", () => {
   const data = ensureShortcuts(createEmptyAppData(NOW), NOW);
-  const updated = updateShortcut(data, "shortcut-calendar", {
+  const updated = updateShortcut(data, "shortcut-search", {
     position: 3
   }, "2026-05-30T11:00:00.000Z");
 
-  assert.deepEqual(updated.shortcuts.map((shortcut) => shortcut.id).slice(0, 4), [
+  assert.deepEqual(updated.shortcuts.map((shortcut) => shortcut.id), [
+    "shortcut-maps",
     "shortcut-gmail",
-    "shortcut-drive",
-    "shortcut-calendar",
-    "shortcut-maps"
+    "shortcut-search"
   ]);
-  assert.equal(updated.shortcuts.find((shortcut) => shortcut.id === "shortcut-calendar").position, 3);
+  assert.equal(updated.shortcuts.find((shortcut) => shortcut.id === "shortcut-search").position, 3);
 });
 
 test("resetShortcuts restores defaults", () => {
@@ -117,12 +113,15 @@ test("pinnedShortcuts filters unsafe and unpinned entries while preserving order
     { id: "shortcut-unsafe", label: "Unsafe", url: "javascript:alert(1)", pinned: true, position: 3 },
     { id: "shortcut-malformed", label: "", url: "https://malformed.example", pinned: true, position: 4 },
     { id: "shortcut-two", label: "Two", url: "https://two.example", pinned: true, position: 5 },
-    { id: "shortcut-three", label: "Three", url: "https://three.example", pinned: true, position: 6 }
+    { id: "shortcut-three", label: "Three", url: "https://three.example", pinned: true, position: 6 },
+    { id: "shortcut-four", label: "Four", url: "https://four.example", pinned: true, position: 7 }
   ];
 
   const pinned = pinnedShortcuts(shortcuts, 2);
+  const defaultPinned = pinnedShortcuts(shortcuts);
 
   assert.deepEqual(pinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two"]);
   assert.equal(pinned.length, 2);
   assert.equal(pinned.every((shortcut) => shortcut.pinned), true);
+  assert.deepEqual(defaultPinned.map((shortcut) => shortcut.id), ["shortcut-one", "shortcut-two", "shortcut-three"]);
 });

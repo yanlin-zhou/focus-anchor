@@ -10,7 +10,7 @@ test("toManageViewModel exposes cards, rules, summary, and sections", () => {
   const viewModel = toManageViewModel(createInitialData(NOW));
 
   assert.equal(viewModel.cards.length, 4);
-  assert.equal(viewModel.shortcuts.length, 6);
+  assert.equal(viewModel.shortcuts.length, 3);
   assert.equal(viewModel.rules.length, 1);
   assert.equal(viewModel.summary.cards, 4);
   assert.equal(viewModel.summary.links, 7);

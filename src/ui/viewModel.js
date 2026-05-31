@@ -24,7 +24,7 @@ export function toViewModel(homeModel, nowIso, uiState = {}) {
         type: item.goalType,
         label: labelForType(item.goalType)
       })),
-      shortcuts: pinnedShortcuts(homeModel.shortcuts, 6).map((shortcut, index) => ({
+      shortcuts: pinnedShortcuts(homeModel.shortcuts, 3).map((shortcut, index) => ({
         slot: index + 1,
         label: shortcut.label
       }))

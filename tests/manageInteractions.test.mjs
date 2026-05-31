@@ -26,14 +26,14 @@ test("manage page saves shortcut edits and resets shortcuts", async (t) => {
     label: "Mail",
     url: "https://mail.google.com/mail/u/0/",
     pinned: false,
-    position: "4"
+    position: "3"
   });
   let saved = harness.storage.saved.at(-1)["focus-anchor-data"];
   let shortcut = saved.shortcuts.find((entry) => entry.id === "shortcut-gmail");
   assert.equal(shortcut.label, "Mail");
   assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
   assert.equal(shortcut.pinned, false);
-  assert.equal(shortcut.position, 4);
+  assert.equal(shortcut.position, 3);
 
   await harness.click({ action: "reset-shortcuts" });
   saved = harness.storage.saved.at(-1)["focus-anchor-data"];
@@ -50,7 +50,7 @@ test("manage page migrates missing shortcuts before saving shortcut edits", asyn
     label: "Mail",
     url: "https://mail.google.com/mail/u/0/",
     pinned: false,
-    position: "4"
+    position: "3"
   });
 
   const saved = harness.storage.saved.at(-1)["focus-anchor-data"];
@@ -59,7 +59,7 @@ test("manage page migrates missing shortcuts before saving shortcut edits", asyn
   assert.equal(shortcut.label, "Mail");
   assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
   assert.equal(shortcut.pinned, false);
-  assert.equal(shortcut.position, 4);
+  assert.equal(shortcut.position, 3);
 });
 
 async function loadManageHarness(initialData) {

@@ -115,7 +115,7 @@ test("new tab opens shortcut slots without exposing urls in the DOM action", asy
   const harness = await loadNewtabHarness(appData);
   t.after(harness.restore);
 
-  await harness.click({ action: "open-shortcut", shortcutSlot: "1" });
+  await harness.click({ action: "open-shortcut", shortcutSlot: "2" });
   await harness.click({ action: "open-shortcut", shortcutSlot: "999" });
 
   assert.deepEqual(harness.createdTabs, [{ url: "https://mail.google.com/", active: true }]);

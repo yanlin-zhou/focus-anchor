@@ -160,14 +160,14 @@ test("updateShortcut edits manage shortcut fields safely", () => {
     label: "Mail",
     url: "https://mail.google.com/mail/u/0/",
     pinned: false,
-    position: 4
+    position: 3
   }, LATER);
   const shortcut = next.shortcuts.find((entry) => entry.id === "shortcut-gmail");
 
   assert.equal(shortcut.label, "Mail");
   assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
   assert.equal(shortcut.pinned, false);
-  assert.equal(shortcut.position, 4);
+  assert.equal(shortcut.position, 3);
   assert.equal(validateAppData(next).ok, true);
 });
 
@@ -179,12 +179,9 @@ test("resetShortcuts restores default shortcut set", () => {
   const next = resetShortcuts(data, LATER);
 
   assert.deepEqual(next.shortcuts.map((shortcut) => shortcut.id), [
-    "shortcut-gmail",
-    "shortcut-calendar",
-    "shortcut-drive",
     "shortcut-maps",
-    "shortcut-search",
-    "shortcut-lark"
+    "shortcut-gmail",
+    "shortcut-search"
   ]);
   assert.equal(validateAppData(next).ok, true);
 });

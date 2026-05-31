@@ -181,7 +181,17 @@ test("rendered html skips unsafe card links", () => {
 });
 
 test("safe home view model excludes sensitive task and card titles", () => {
-  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const data = createInitialData("2026-05-30T09:12:00.000Z");
+  data.shortcuts.push({
+    id: "shortcut-calendar",
+    label: "Calendar",
+    url: "https://calendar.google.com/",
+    pinned: true,
+    position: 4,
+    createdAt: "2026-05-30T09:12:00.000Z",
+    updatedAt: "2026-05-30T09:12:00.000Z"
+  });
+  const homeModel = buildHomeModel(data, "2026-05-30");
   const viewModel = toViewModel(homeModel, "2026-05-30T09:12:00.000Z");
   const serializedSafeHome = JSON.stringify(viewModel.safeHome);
 
@@ -190,7 +200,8 @@ test("safe home view model excludes sensitive task and card titles", () => {
   assert.doesNotMatch(serializedSafeHome, /Biweekly report/);
   assert.match(serializedSafeHome, /anchors ready/);
   assert.equal(viewModel.safeHome.peekItems.length, 3);
-  assert.equal(viewModel.safeHome.shortcuts.length, 6);
+  assert.equal(viewModel.safeHome.shortcuts.length, 3);
+  assert.deepEqual(viewModel.safeHome.shortcuts.map((shortcut) => shortcut.label), ["Maps", "Gmail", "Search"]);
 });
 
 test("default safe home does not leak title-derived peek ids", () => {
@@ -253,13 +264,18 @@ test("default rendered home does not include sensitive focus text", () => {
 
   assert.match(html, /Reveal focus/);
   assert.match(html, /Work Doc/);
-  assert.match(html, /Calendar/);
+  assert.match(html, /Gmail/);
+  assert.match(html, /Search/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="1"/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="2"/);
+  assert.match(html, /data-action="open-shortcut" data-shortcut-slot="3"/);
   assert.doesNotMatch(serializedSafeHome, /internal\.example\.com/);
   assert.doesNotMatch(serializedSafeHome, /shortcut-internal-doc/);
   assert.doesNotMatch(html, /internal\.example\.com/);
   assert.doesNotMatch(html, /shortcut-internal-doc/);
+  assert.doesNotMatch(html, /Calendar/);
+  assert.doesNotMatch(html, /Drive/);
+  assert.doesNotMatch(html, /Lark/);
   assert.doesNotMatch(html, /data-shortcut-url=/);
   assert.doesNotMatch(html, /<a class="shortcut"/);
   assert.doesNotMatch(html, /href="https:\/\//);

@@ -291,7 +291,7 @@ function showCompletionReward(button) {
 function shortcutUrlForSlot(slotValue) {
   const slot = Number(slotValue);
   if (!Number.isInteger(slot) || slot < 1) return "";
-  return pinnedShortcuts(appData?.shortcuts, 6)[slot - 1]?.url ?? "";
+  return pinnedShortcuts(appData?.shortcuts, 3)[slot - 1]?.url ?? "";
 }
 
 function toggleExpandedCard(cardId) {
