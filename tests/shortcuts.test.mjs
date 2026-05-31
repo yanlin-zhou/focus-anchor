@@ -38,6 +38,31 @@ test("ensureShortcuts migrates missing shortcuts without changing existing data 
   assert.equal(migrated.updatedAt, "2026-05-30T10:00:00.000Z");
 });
 
+test("ensureShortcuts upgrades legacy default shortcuts to the current top three", () => {
+  const data = {
+    ...createEmptyAppData(NOW),
+    updatedAt: NOW,
+    shortcuts: [
+      { id: "shortcut-gmail", label: "Gmail", url: "https://mail.google.com/", pinned: true, position: 1, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-calendar", label: "Calendar", url: "https://calendar.google.com/", pinned: true, position: 2, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-drive", label: "Drive", url: "https://drive.google.com/", pinned: true, position: 3, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-maps", label: "Maps", url: "https://maps.google.com/", pinned: true, position: 4, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-search", label: "Search", url: "https://www.google.com/", pinned: true, position: 5, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-lark", label: "Lark", url: "https://www.larksuite.com/", pinned: true, position: 6, createdAt: NOW, updatedAt: NOW }
+    ]
+  };
+
+  const migrated = ensureShortcuts(data, "2026-05-30T10:00:00.000Z");
+
+  assert.deepEqual(migrated.shortcuts.map((shortcut) => shortcut.id), [
+    "shortcut-maps",
+    "shortcut-gmail",
+    "shortcut-search"
+  ]);
+  assert.deepEqual(migrated.shortcuts.map((shortcut) => shortcut.position), [1, 2, 3]);
+  assert.equal(migrated.updatedAt, "2026-05-30T10:00:00.000Z");
+});
+
 test("ensureShortcuts normalizes existing shortcuts and drops unsafe urls", () => {
   const data = {
     ...createEmptyAppData(NOW),

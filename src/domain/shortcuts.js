@@ -6,6 +6,15 @@ export const DEFAULT_SHORTCUTS = [
   { id: "shortcut-search", label: "Search", url: "https://www.google.com/" }
 ];
 
+const LEGACY_DEFAULT_SHORTCUTS = [
+  { id: "shortcut-gmail", label: "Gmail", url: "https://mail.google.com/" },
+  { id: "shortcut-calendar", label: "Calendar", url: "https://calendar.google.com/" },
+  { id: "shortcut-drive", label: "Drive", url: "https://drive.google.com/" },
+  { id: "shortcut-maps", label: "Maps", url: "https://maps.google.com/" },
+  { id: "shortcut-search", label: "Search", url: "https://www.google.com/" },
+  { id: "shortcut-lark", label: "Lark", url: "https://www.larksuite.com/" }
+];
+
 export function createDefaultShortcuts(nowIso = new Date().toISOString()) {
   return DEFAULT_SHORTCUTS.map((shortcut, index) => ({
     ...shortcut,
@@ -20,13 +29,15 @@ export function createDefaultShortcuts(nowIso = new Date().toISOString()) {
 export function ensureShortcuts(data, nowIso = new Date().toISOString()) {
   if (data === null) return null;
   const current = Array.isArray(data.shortcuts) ? data.shortcuts : [];
+  const normalized = normalizeShortcuts(current, nowIso);
+  const hasLegacyDefaults = isLegacyDefaultShortcutSet(normalized);
   const shortcuts = current.length > 0
-    ? normalizeShortcuts(current, nowIso)
+    ? (hasLegacyDefaults ? createDefaultShortcuts(nowIso) : normalized)
     : createDefaultShortcuts(nowIso);
 
   return {
     ...data,
-    updatedAt: data.shortcuts === undefined ? nowIso : data.updatedAt,
+    updatedAt: data.shortcuts === undefined || hasLegacyDefaults ? nowIso : data.updatedAt,
     shortcuts
   };
 }
@@ -79,6 +90,17 @@ function normalizeShortcuts(shortcuts, nowIso = new Date().toISOString()) {
     .map((shortcut, index) => normalizeShortcut(shortcut, index, nowIso))
     .filter(Boolean)
     .sort((a, b) => a.position - b.position || a.label.localeCompare(b.label)));
+}
+
+function isLegacyDefaultShortcutSet(shortcuts) {
+  if (shortcuts.length !== LEGACY_DEFAULT_SHORTCUTS.length) return false;
+  return LEGACY_DEFAULT_SHORTCUTS.every((legacy, index) => {
+    const shortcut = shortcuts[index];
+    return shortcut?.id === legacy.id &&
+      shortcut.label === legacy.label &&
+      shortcut.url === normalizeUrl(legacy.url) &&
+      shortcut.pinned === true;
+  });
 }
 
 function moveShortcut(shortcuts, shortcutId, shortcut, requestedPosition) {
