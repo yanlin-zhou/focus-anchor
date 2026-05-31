@@ -3,6 +3,7 @@ import test from "node:test";
 import { createInitialData } from "../src/domain/sampleData.js";
 import { validateAppData } from "../src/domain/schema.js";
 import { addGoalCard, addLinkToCard, addRuleToCard, updateGoalCard } from "../src/domain/manageActions.js";
+import { resetShortcuts, updateShortcut } from "../src/domain/shortcuts.js";
 
 const NOW = "2026-05-22T09:00:00.000Z";
 const LATER = "2026-05-22T10:00:00.000Z";
@@ -151,6 +152,38 @@ test("manage action fallback ids do not collide without crypto randomUUID", () =
     assert.notEqual(firstLink.id, secondLink.id);
     assert.notEqual(firstRule.id, secondRule.id);
   });
+});
+
+test("updateShortcut edits manage shortcut fields safely", () => {
+  const data = createInitialData(NOW);
+  const next = updateShortcut(data, "shortcut-gmail", {
+    label: "Mail",
+    url: "https://mail.google.com/mail/u/0/",
+    pinned: false,
+    position: 3
+  }, LATER);
+  const shortcut = next.shortcuts.find((entry) => entry.id === "shortcut-gmail");
+
+  assert.equal(shortcut.label, "Mail");
+  assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
+  assert.equal(shortcut.pinned, false);
+  assert.equal(shortcut.position, 3);
+  assert.equal(validateAppData(next).ok, true);
+});
+
+test("resetShortcuts restores default shortcut set", () => {
+  const data = {
+    ...createInitialData(NOW),
+    shortcuts: [{ id: "shortcut-custom", label: "Custom", url: "https://example.com", pinned: true, position: 1 }]
+  };
+  const next = resetShortcuts(data, LATER);
+
+  assert.deepEqual(next.shortcuts.map((shortcut) => shortcut.id), [
+    "shortcut-maps",
+    "shortcut-gmail",
+    "shortcut-search"
+  ]);
+  assert.equal(validateAppData(next).ok, true);
 });
 
 function withFallbackIdGeneration(run) {

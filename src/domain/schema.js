@@ -17,6 +17,7 @@ export function isAllowedLinkUrl(value) {
 export function validateAppData(data) {
   const errors = [];
   if (!Array.isArray(data.goalCards)) errors.push("goalCards must be an array");
+  if (!Array.isArray(data.shortcuts)) errors.push("shortcuts must be an array");
   if (!Array.isArray(data.behaviorEvents)) errors.push("behaviorEvents must be an array");
   if (!Array.isArray(data.dailySnapshots)) errors.push("dailySnapshots must be an array");
   if (data.setup !== undefined) {
@@ -24,6 +25,23 @@ export function validateAppData(data) {
     if (data.setup && data.setup.version !== 1) errors.push("setup version must be 1");
     if (data.setup && data.setup.completedAt !== null && typeof data.setup.completedAt !== "string") errors.push("setup completedAt must be null or a string");
     if (data.setup && data.setup.skippedAt !== null && typeof data.setup.skippedAt !== "string") errors.push("setup skippedAt must be null or a string");
+  }
+
+  for (const shortcut of data.shortcuts ?? []) {
+    const shortcutId = shortcut?.id;
+    const shortcutLabel = shortcut?.label;
+    const shortcutUrl = shortcut?.url;
+    const shortcutName = shortcutId ?? "unknown";
+
+    if (typeof shortcutId !== "string") errors.push("shortcut id must be a string");
+    else if (!shortcutId) errors.push("shortcut missing id");
+    if (typeof shortcutLabel !== "string") errors.push(`shortcut ${shortcutName} label must be a string`);
+    else if (!shortcutLabel) errors.push(`shortcut ${shortcutName} missing label`);
+    if (typeof shortcutUrl !== "string") errors.push(`shortcut ${shortcutName} url must be a string`);
+    else if (!shortcutUrl) errors.push(`shortcut ${shortcutName} missing url`);
+    else if (!isAllowedLinkUrl(shortcutUrl)) errors.push(`shortcut ${shortcutName} has invalid url`);
+    if (typeof shortcut?.pinned !== "boolean") errors.push(`shortcut ${shortcutName} pinned must be boolean`);
+    if (!Number.isInteger(shortcut?.position) || shortcut.position < 1) errors.push(`shortcut ${shortcutName} position must be a positive integer`);
   }
 
   for (const card of data.goalCards ?? []) {

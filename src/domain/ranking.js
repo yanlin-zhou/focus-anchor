@@ -28,7 +28,8 @@ export function buildHomeModel(data, todayKey) {
     focusCards,
     backlogCards,
     parkingCards,
-    backlogCollapsed: true
+    backlogCollapsed: true,
+    shortcuts: data.shortcuts ?? []
   };
 }
 

@@ -31,6 +31,7 @@ test("import parses valid JSON and reports summary counts for initial data", () 
   assert.equal(result.error, null);
   assert.deepEqual(result.summary, {
     cards: 4,
+    shortcuts: 3,
     links: 7,
     rules: 1,
     openItems: 6,
@@ -38,6 +39,7 @@ test("import parses valid JSON and reports summary counts for initial data", () 
     events: 0,
     snapshots: 0
   });
+  assert.equal(result.summary.shortcuts, data.shortcuts.length);
   assert.equal(result.data.setup.completedAt, NOW);
 });
 
@@ -77,6 +79,17 @@ test("import rejects unsafe link URL schemes", () => {
   assert.equal(result.ok, false);
   assert.equal(result.data, null);
   assert.match(result.error, /invalid url/);
+});
+
+test("import migrates missing shortcuts to defaults", () => {
+  const data = createInitialData("2026-05-30T09:12:00.000Z");
+  delete data.shortcuts;
+
+  const result = parseImportJson(JSON.stringify(data), "2026-05-30T10:00:00.000Z");
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.shortcuts.length, 3);
+  assert.equal(result.summary.shortcuts, 3);
 });
 
 

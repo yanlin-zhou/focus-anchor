@@ -17,9 +17,55 @@ test("manage reset handler requires exact RESET confirmation", async (t) => {
   assert.equal(harness.storage.removed, true);
 });
 
+test("manage page saves shortcut edits and resets shortcuts", async (t) => {
+  const data = createInitialData(NOW);
+  const harness = await loadManageHarness(data);
+  t.after(harness.restore);
+
+  await harness.submitShortcut("shortcut-gmail", {
+    label: "Mail",
+    url: "https://mail.google.com/mail/u/0/",
+    pinned: false,
+    position: "3"
+  });
+  let saved = harness.storage.saved.at(-1)["focus-anchor-data"];
+  let shortcut = saved.shortcuts.find((entry) => entry.id === "shortcut-gmail");
+  assert.equal(shortcut.label, "Mail");
+  assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
+  assert.equal(shortcut.pinned, false);
+  assert.equal(shortcut.position, 3);
+
+  await harness.click({ action: "reset-shortcuts" });
+  saved = harness.storage.saved.at(-1)["focus-anchor-data"];
+  assert.equal(saved.shortcuts.find((entry) => entry.id === "shortcut-gmail").label, "Gmail");
+});
+
+test("manage page migrates missing shortcuts before saving shortcut edits", async (t) => {
+  const data = createInitialData(NOW);
+  delete data.shortcuts;
+  const harness = await loadManageHarness(data);
+  t.after(harness.restore);
+
+  await harness.submitShortcut("shortcut-gmail", {
+    label: "Mail",
+    url: "https://mail.google.com/mail/u/0/",
+    pinned: false,
+    position: "3"
+  });
+
+  const saved = harness.storage.saved.at(-1)["focus-anchor-data"];
+  const shortcut = saved.shortcuts.find((entry) => entry.id === "shortcut-gmail");
+  assert.equal(Array.isArray(saved.shortcuts), true);
+  assert.equal(shortcut.label, "Mail");
+  assert.equal(shortcut.url, "https://mail.google.com/mail/u/0/");
+  assert.equal(shortcut.pinned, false);
+  assert.equal(shortcut.position, 3);
+});
+
 async function loadManageHarness(initialData) {
   const originalDocument = globalThis.document;
   const originalChrome = globalThis.chrome;
+  const originalFormData = globalThis.FormData;
   const listeners = new Map();
   const resetInput = { name: "reset-confirmation", value: "" };
   const app = {
@@ -35,10 +81,13 @@ async function loadManageHarness(initialData) {
   };
   const storage = {
     removed: false,
+    saved: [],
     async get() {
       return { "focus-anchor-data": structuredClone(initialData) };
     },
-    async set() {},
+    async set(payload) {
+      this.saved.push(structuredClone(payload));
+    },
     async remove(key) {
       if (key === "focus-anchor-data") this.removed = true;
     }
@@ -62,6 +111,17 @@ async function loadManageHarness(initialData) {
   globalThis.chrome = {
     storage: { local: storage }
   };
+  globalThis.FormData = class FakeFormData {
+    constructor(form) {
+      this.fields = form.formData ?? form.fields ?? {};
+    }
+    get(key) {
+      return this.fields[key] ?? "";
+    }
+    entries() {
+      return Object.entries(this.fields)[Symbol.iterator]();
+    }
+  };
   globalThis.URL = globalThis.URL ?? {};
   globalThis.URL.createObjectURL = globalThis.URL.createObjectURL ?? (() => "blob:focus-anchor");
   globalThis.URL.revokeObjectURL = globalThis.URL.revokeObjectURL ?? (() => {});
@@ -83,9 +143,28 @@ async function loadManageHarness(initialData) {
         }
       });
     },
+    async submitShortcut(shortcutId, fields) {
+      const listener = listeners.get("submit");
+      assert.equal(typeof listener, "function");
+      await listener({
+        preventDefault() {},
+        target: {
+          dataset: { shortcutId },
+          formData: fields,
+          elements: {
+            pinned: { checked: Boolean(fields.pinned) }
+          },
+          closest(selector) {
+            return selector === "form[data-action='save-shortcut']" ? this : null;
+          }
+        },
+        formData: fields
+      });
+    },
     restore() {
       globalThis.document = originalDocument;
       globalThis.chrome = originalChrome;
+      globalThis.FormData = originalFormData;
     }
   };
 }

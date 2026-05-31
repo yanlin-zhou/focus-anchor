@@ -4,6 +4,7 @@ import { generateDueTodayItems } from "./domain/rules.js";
 import { buildHomeModel } from "./domain/ranking.js";
 import { upsertDailySnapshot } from "./domain/snapshots.js";
 import { isAllowedLinkUrl } from "./domain/schema.js";
+import { pinnedShortcuts } from "./domain/shortcuts.js";
 import { SETUP_TEMPLATES, completeSetupDraft, createDraft, createDraftCardFromTemplate } from "./domain/templates.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { toViewModel } from "./ui/viewModel.js";
@@ -12,13 +13,16 @@ import { renderNotSetUpHtml, renderSetupHtml } from "./ui/setupRender.js";
 import { toSetupViewModel } from "./ui/setupViewModel.js";
 import { addTodayItem, completeTodayItem, pinCard, snoozeCard } from "./ui/actions.js";
 
+const REVEAL_DURATION_MS = 20_000;
 const app = document.querySelector("#app");
 const toast = document.querySelector("#completion-toast");
 const repo = createChromeRepository();
 const uiState = {
   expandedCardIds: new Set(),
-  backlogExpanded: false
+  backlogExpanded: false,
+  focusRevealed: false
 };
+let revealTimerId = null;
 let appData = ensureSetupMeta(await repo.load());
 await refresh();
 
@@ -138,11 +142,32 @@ app.addEventListener("click", async (event) => {
     return;
   }
 
+  if (action === "open-shortcut") {
+    const url = shortcutUrlForSlot(target.dataset.shortcutSlot);
+    if (!isAllowedLinkUrl(url)) return;
+    globalThis.chrome?.tabs?.create?.({ url, active: true });
+    return;
+  }
+
+  if (action === "reveal-focus") {
+    if (getSetupState(appData) !== "complete") return;
+    revealFocus();
+    await refresh();
+    return;
+  }
+
+  if (action === "hide-focus") {
+    hideFocus();
+    await refresh();
+    return;
+  }
+
   if (getSetupState(appData) !== "complete") return;
 
   if (action === "complete-item") {
     const itemId = target.dataset.itemId;
     showCompletionReward(target);
+    scheduleRevealHide();
     appData = completeTodayItem(appData, itemId, nowIso);
     await repo.save(appData);
     window.setTimeout(refresh, 700);
@@ -197,6 +222,26 @@ app.addEventListener("click", async (event) => {
   }
 });
 
+document.addEventListener("keydown", async (event) => {
+  if (shouldIgnoreGlobalShortcut(event)) return;
+  if (getSetupState(appData) !== "complete") return;
+  if (event.key === "Escape" && uiState.focusRevealed) {
+    hideFocus();
+    await refresh();
+    return;
+  }
+  if ((event.key === "f" || event.key === "/") && !uiState.focusRevealed) {
+    revealFocus();
+    await refresh();
+  }
+});
+
+window.addEventListener("blur", async () => {
+  if (!uiState.focusRevealed) return;
+  hideFocus();
+  await refresh();
+});
+
 async function refresh() {
   const nowIso = new Date().toISOString();
   const state = getSetupState(appData);
@@ -243,6 +288,12 @@ function showCompletionReward(button) {
   toast.classList.add("show");
 }
 
+function shortcutUrlForSlot(slotValue) {
+  const slot = Number(slotValue);
+  if (!Number.isInteger(slot) || slot < 1) return "";
+  return pinnedShortcuts(appData?.shortcuts, 3)[slot - 1]?.url ?? "";
+}
+
 function toggleExpandedCard(cardId) {
   if (!cardId) return;
   if (uiState.expandedCardIds.has(cardId)) {
@@ -250,4 +301,52 @@ function toggleExpandedCard(cardId) {
     return;
   }
   uiState.expandedCardIds.add(cardId);
+}
+
+function revealFocus() {
+  uiState.focusRevealed = true;
+  scheduleRevealHide();
+}
+
+function hideFocus() {
+  uiState.focusRevealed = false;
+  clearRevealTimer();
+}
+
+function scheduleRevealHide() {
+  clearRevealTimer();
+  revealTimerId = window.setTimeout(async () => {
+    revealTimerId = null;
+    uiState.focusRevealed = false;
+    await refresh();
+  }, REVEAL_DURATION_MS);
+}
+
+function clearRevealTimer() {
+  if (revealTimerId !== null) {
+    window.clearTimeout?.(revealTimerId);
+    revealTimerId = null;
+  }
+}
+
+function shouldIgnoreGlobalShortcut(event) {
+  return Boolean(
+    event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      isEditableTarget(event.target)
+  );
+}
+
+function isEditableTarget(target) {
+  const element = target?.nodeType === 1 ? target : target?.parentElement ?? target;
+  if (!element) return false;
+  if (element.isContentEditable) return true;
+
+  const tagName = element.tagName?.toLowerCase?.();
+  if (tagName === "input" || tagName === "textarea" || tagName === "select") return true;
+
+  return Boolean(element.closest?.("[contenteditable='true'], [contenteditable='plaintext-only'], [contenteditable='']"));
 }

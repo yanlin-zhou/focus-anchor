@@ -39,7 +39,10 @@ Load locally in Chrome:
 After loading the extension locally:
 
 - Open a new tab with empty local storage and confirm the setup screen appears instead of demo/sample data.
-- Complete setup with one card and one today item, then confirm the Top 3 Today Items appear above collapsed Focus Lane cards.
-- Confirm Backlog is collapsed by default.
+- Complete setup with one card and one today item.
+- Confirm the default new tab shows Safe Home with non-sensitive counts and shortcuts, not task titles or project names.
+- Click `Reveal focus` and confirm the Top 3 Today Items appear in the drawer.
 - Click a Top 3 `Done` action and confirm the completion reward motion plays without shifting the layout.
+- Confirm the drawer hides after `Escape`, tab blur, and the auto-hide timer.
 - Open another new tab and confirm local state persists.
+- Open Manage and confirm shortcuts can be edited and reset.

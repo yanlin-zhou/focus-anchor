@@ -10,10 +10,11 @@ test("toManageViewModel exposes cards, rules, summary, and sections", () => {
   const viewModel = toManageViewModel(createInitialData(NOW));
 
   assert.equal(viewModel.cards.length, 4);
+  assert.equal(viewModel.shortcuts.length, 3);
   assert.equal(viewModel.rules.length, 1);
   assert.equal(viewModel.summary.cards, 4);
   assert.equal(viewModel.summary.links, 7);
-  assert.equal(viewModel.sections.map((section) => section.id).join(","), "cards,rules,data");
+  assert.equal(viewModel.sections.map((section) => section.id).join(","), "cards,shortcuts,rules,data");
 });
 
 test("toManageViewModel handles null app data", () => {
@@ -24,7 +25,7 @@ test("toManageViewModel handles null app data", () => {
   assert.equal(viewModel.selectedCard, null);
   assert.equal(viewModel.summary.cards, 0);
   assert.equal(viewModel.summary.links, 0);
-  assert.equal(viewModel.sections.map((section) => section.id).join(","), "cards,rules,data");
+  assert.equal(viewModel.sections.map((section) => section.id).join(","), "cards,shortcuts,rules,data");
 });
 
 test("toManageViewModel handles empty app data", () => {
@@ -64,4 +65,14 @@ test("renderManageHtml escapes card text", () => {
 
   assert.doesNotMatch(html, /<script>/);
   assert.match(html, /&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});
+
+test("renderManageHtml renders shortcuts editor", () => {
+  const viewModel = toManageViewModel(createInitialData("2026-05-30T09:12:00.000Z"));
+  const html = renderManageHtml(viewModel);
+
+  assert.match(html, /data-section="shortcuts"/);
+  assert.match(html, /Save shortcut/);
+  assert.match(html, /Reset shortcuts/);
+  assert.match(html, /Gmail/);
 });

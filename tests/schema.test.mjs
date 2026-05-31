@@ -50,3 +50,31 @@ test("schema rejects unsafe link URL schemes", () => {
   assert.equal(result.ok, false);
   assert.match(result.errors.join(" "), /invalid url/);
 });
+
+test("app data requires valid shortcuts", () => {
+  const data = createInitialData("2026-05-30T09:12:00.000Z");
+  data.shortcuts = [
+    { id: "shortcut-safe", label: "Safe", url: "https://example.com", pinned: true, position: 1 },
+    { id: "shortcut-unsafe", label: "Unsafe", url: "javascript:alert(1)", pinned: true, position: 2 }
+  ];
+
+  const result = validateAppData(data);
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join(" "), /shortcut shortcut-unsafe has invalid url/);
+});
+
+test("app data rejects malformed non-string shortcut fields", () => {
+  const data = createInitialData("2026-05-30T09:12:00.000Z");
+  data.shortcuts = [
+    { id: 123, label: "Numeric id", url: "https://example.com", pinned: true, position: 1 },
+    { id: "shortcut-malformed", label: 456, url: 789, pinned: true, position: 2 }
+  ];
+
+  const result = validateAppData(data);
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join(" "), /shortcut id must be a string/);
+  assert.match(result.errors.join(" "), /shortcut shortcut-malformed label must be a string/);
+  assert.match(result.errors.join(" "), /shortcut shortcut-malformed url must be a string/);
+});

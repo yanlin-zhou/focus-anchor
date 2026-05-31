@@ -1,5 +1,6 @@
 import { parseImportJson, serializeExportData } from "./domain/importExport.js";
 import { updateGoalCard } from "./domain/manageActions.js";
+import { ensureShortcuts, resetShortcuts, updateShortcut } from "./domain/shortcuts.js";
 import { createChromeRepository } from "./storage/repository.js";
 import { readCheckbox, readFormData, readNumber } from "./ui/forms.js";
 import { renderManageHtml } from "./ui/manageRender.js";
@@ -8,29 +9,47 @@ import { toManageViewModel } from "./ui/manageViewModel.js";
 const app = document.querySelector("#manage-app");
 const repo = createChromeRepository();
 
-let appData = await repo.load();
+let appData = normalizeAppData(await repo.load());
 let selectedCardId = appData?.goalCards?.[0]?.id ?? null;
 let pendingImport = null;
 
 render();
 
 app.addEventListener("submit", async (event) => {
-  const form = event.target.closest("form[data-action='save-card']");
-  if (!form || !appData) return;
+  const cardForm = event.target.closest("form[data-action='save-card']");
+  if (cardForm && appData) {
+    event.preventDefault();
+
+    const fields = readFormData(cardForm);
+    const currentCard = appData.goalCards.find((card) => card.id === cardForm.dataset.cardId);
+    appData = updateGoalCard(appData, cardForm.dataset.cardId, {
+      title: fields.title,
+      type: fields.type,
+      status: fields.status,
+      importance: readNumber(fields.importance, currentCard?.importance ?? 3),
+      pinned: readCheckbox(cardForm, "pinned"),
+      snoozedUntil: fields.snoozedUntil,
+      sortReason: fields.sortReason
+    });
+    selectedCardId = cardForm.dataset.cardId ?? selectedCardId;
+    await repo.save(appData);
+    render();
+    return;
+  }
+
+  const shortcutForm = event.target.closest("form[data-action='save-shortcut']");
+  if (!shortcutForm || !appData) return;
   event.preventDefault();
 
-  const fields = readFormData(form);
-  const currentCard = appData.goalCards.find((card) => card.id === form.dataset.cardId);
-  appData = updateGoalCard(appData, form.dataset.cardId, {
-    title: fields.title,
-    type: fields.type,
-    status: fields.status,
-    importance: readNumber(fields.importance, currentCard?.importance ?? 3),
-    pinned: readCheckbox(form, "pinned"),
-    snoozedUntil: fields.snoozedUntil,
-    sortReason: fields.sortReason
+  appData = ensureShortcuts(appData);
+  const fields = readFormData(shortcutForm);
+  const currentShortcut = appData.shortcuts?.find((shortcut) => shortcut.id === shortcutForm.dataset.shortcutId);
+  appData = updateShortcut(appData, shortcutForm.dataset.shortcutId, {
+    label: fields.label,
+    url: fields.url,
+    pinned: readCheckbox(shortcutForm, "pinned"),
+    position: readNumber(fields.position, currentShortcut?.position ?? 1)
   });
-  selectedCardId = form.dataset.cardId ?? selectedCardId;
   await repo.save(appData);
   render();
 });
@@ -60,8 +79,15 @@ app.addEventListener("click", async (event) => {
     return;
   }
 
+  if (action === "reset-shortcuts") {
+    appData = resetShortcuts(ensureShortcuts(appData));
+    await repo.save(appData);
+    render();
+    return;
+  }
+
   if (action === "confirm-import" && pendingImport?.data) {
-    appData = pendingImport.data;
+    appData = normalizeAppData(pendingImport.data);
     pendingImport = null;
     selectedCardId = appData.goalCards?.[0]?.id ?? null;
     await repo.save(appData);
@@ -107,7 +133,7 @@ app.addEventListener("change", async (event) => {
     }
 
     const importSummary = result.summary;
-    summary.textContent = `${importSummary.cards} cards, ${importSummary.openItems} open items, ${importSummary.rules} rules, ${importSummary.snapshots} snapshots`;
+    summary.textContent = `${importSummary.cards} cards, ${importSummary.openItems} open items, ${importSummary.rules} rules, ${importSummary.shortcuts} shortcuts, ${importSummary.snapshots} snapshots`;
     pendingImport = result;
     confirmButton.disabled = false;
   } catch {
@@ -141,6 +167,10 @@ function render() {
     selectedCardId = appData.goalCards?.[0]?.id ?? null;
   }
   app.innerHTML = renderManageHtml(toManageViewModel(appData, selectedCardId));
+}
+
+function normalizeAppData(data) {
+  return data ? ensureShortcuts(data) : data;
 }
 
 function downloadJson(text) {

@@ -1,6 +1,8 @@
 import { isAllowedLinkUrl } from "../domain/schema.js";
 
 export function renderAppHtml(viewModel) {
+  const safeHome = viewModel.safeHome;
+
   return `
     <header class="topbar">
       <div class="brand"><div class="mark" aria-hidden="true"></div><span>Focus Anchor</span></div>
@@ -11,35 +13,85 @@ export function renderAppHtml(viewModel) {
         <button class="button primary" data-action="quick-add">Quick Add</button>
       </div>
     </header>
-    <section class="daily-panel" aria-label="Today summary">
-      <div>
-        <div class="summary-label">Today's anchor</div>
-        <h1>${escapeHtml(viewModel.summary)}</h1>
+    <section class="safe-home" aria-label="Safe Home">
+      <div class="safe-summary">
+        <div>
+          <div class="summary-label">${escapeHtml(safeHome.privacyLabel)}</div>
+          <h1>${escapeHtml(safeHome.headline)}</h1>
+        </div>
+        <div class="daily-meta">
+          <div>${escapeHtml(safeHome.detail)}</div>
+          <div>${escapeHtml(safeHome.metaLine)}</div>
+        </div>
       </div>
-      <div class="daily-meta">
-        <div>${escapeHtml(viewModel.metaLine)}</div>
-        <div>Local only</div>
+      <div class="shortcut-row" aria-label="Pinned shortcuts">
+        ${safeHome.shortcuts.map(renderShortcut).join("")}
       </div>
+      ${renderRevealToggle(viewModel.focusDrawer.revealed)}
     </section>
-    <section class="top-tasks" aria-label="Top 3 Today Items">
-      ${viewModel.topTasks.length > 0 ? viewModel.topTasks.map(renderTopTask).join("") : renderEmptyTopTasks()}
+    <section class="focus-peek" aria-label="Focus Peek">
+      <div class="section-head"><span>Focus Peek</span><span>Titles hidden</span></div>
+      ${safeHome.peekItems.length > 0 ? safeHome.peekItems.map(renderPeekItem).join("") : `<div class="empty-line">No ready items hidden.</div>`}
     </section>
-    <section class="focus-lane" aria-label="Focus Lane">
-      ${viewModel.focusCards.map(renderFocusCard).join("")}
-    </section>
-    <section class="backlog" aria-label="Backlog Strip">
-      <div class="section-head"><span>Backlog</span><span>${viewModel.backlog.collapsed ? "Collapsed by default" : "Visible for review"}</span></div>
-      ${viewModel.backlog.collapsed ? renderCollapsedBacklog(viewModel.backlog) : renderExpandedBacklog(viewModel.backlog)}
-    </section>
-    <section class="parking" aria-label="Parking">
-      <span>Parking / Paused</span>
-      <span>${viewModel.parkingCount} cards hidden until their return date</span>
-    </section>
+    ${viewModel.focusDrawer.revealed ? renderFocusDrawer(viewModel.focusDrawer) : ""}
   `;
 }
 
 export function mountApp(container, viewModel) {
   container.innerHTML = renderAppHtml(viewModel);
+}
+
+function renderShortcut(shortcut) {
+  if (!shortcut.label || !shortcut.slot) return "";
+  return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">${escapeHtml(shortcut.label)}</button>`;
+}
+
+function renderRevealToggle(isRevealed) {
+  const action = isRevealed ? "hide-focus" : "reveal-focus";
+  const label = isRevealed ? "Hide" : "Reveal focus";
+  return `<button class="reveal-button" type="button" data-action="${action}" aria-expanded="${isRevealed ? "true" : "false"}">${label}</button>`;
+}
+
+function renderPeekItem(item) {
+  return `
+    <div class="peek-item" data-peek-id="${escapeHtml(item.id)}">
+      <span class="peek-rank">${escapeHtml(item.rank)}</span>
+      <span>${escapeHtml(item.label)}</span>
+      <span class="peek-bar tag-${classNameForType(item.type)}" aria-hidden="true"></span>
+    </div>
+  `;
+}
+
+function renderFocusDrawer(drawer) {
+  return `
+    <section class="focus-drawer" aria-label="Focus details">
+      <div class="drawer-panel">
+        <div class="drawer-head">
+          <div>
+            <div class="summary-label">Focus revealed</div>
+            <h1>${escapeHtml(drawer.summary)}</h1>
+          </div>
+          <div class="drawer-actions">
+            <span>${escapeHtml(drawer.autoHideLabel)}</span>
+          </div>
+        </div>
+        <section class="top-tasks" aria-label="Top 3 Today Items">
+          ${drawer.topTasks.length > 0 ? drawer.topTasks.map(renderTopTask).join("") : renderEmptyTopTasks()}
+        </section>
+        <section class="focus-lane" aria-label="Focus Lane">
+          ${drawer.focusCards.map(renderFocusCard).join("")}
+        </section>
+        <section class="backlog" aria-label="Backlog Strip">
+          <div class="section-head"><span>Backlog</span><span>${drawer.backlog.collapsed ? "Collapsed by default" : "Visible for review"}</span></div>
+          ${drawer.backlog.collapsed ? renderCollapsedBacklog(drawer.backlog) : renderExpandedBacklog(drawer.backlog)}
+        </section>
+        <section class="parking" aria-label="Parking">
+          <span>Parking / Paused</span>
+          <span>${drawer.parkingCount} cards hidden until their return date</span>
+        </section>
+      </div>
+    </section>
+  `;
 }
 
 function renderTopTask(task) {
@@ -71,10 +123,9 @@ function renderFocusCard(card) {
           <div class="collapsed-stat"><strong>${card.openItemCount}</strong>open items</div>
           <div class="collapsed-stat"><strong>${card.linkCount}</strong>links</div>
         </div>
-        ${card.expanded ? renderExpandedCard(card) : ""}
         <div class="card-footer">
           <div class="footer-group">
-            <button class="button primary" data-action="expand-card" data-card-id="${escapeHtml(card.id)}">${card.expanded ? "Collapse" : "Expand"}</button>
+            <button class="button primary" type="button" data-action="expand-card" data-card-id="${escapeHtml(card.id)}" aria-expanded="${card.expanded ? "true" : "false"}">${card.expanded ? "Hide" : "Review focus"}</button>
             <button class="button text" data-action="open-all" data-card-id="${escapeHtml(card.id)}">Open all</button>
           </div>
           <div class="footer-group">
@@ -82,6 +133,7 @@ function renderFocusCard(card) {
             <button class="button" data-action="snooze-card" data-card-id="${escapeHtml(card.id)}">Snooze</button>
           </div>
         </div>
+        ${card.expanded ? renderExpandedCard(card) : ""}
       </div>
     </article>
   `;

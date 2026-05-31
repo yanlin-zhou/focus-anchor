@@ -1,4 +1,5 @@
 import { toLocalDateKey } from "./date.js";
+import { createDefaultShortcuts } from "./shortcuts.js";
 
 export function createInitialData(nowIso = new Date().toISOString()) {
   const todayKey = toLocalDateKey(nowIso);
@@ -128,6 +129,7 @@ export function createInitialData(nowIso = new Date().toISOString()) {
         rules: []
       }
     ],
+    shortcuts: createDefaultShortcuts(nowIso),
     behaviorEvents: [],
     dailySnapshots: []
   };
