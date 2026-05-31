@@ -27,7 +27,7 @@ export function renderAppHtml(viewModel) {
       <div class="shortcut-row" aria-label="Pinned shortcuts">
         ${safeHome.shortcuts.map(renderShortcut).join("")}
       </div>
-      <button class="reveal-button" type="button" data-action="reveal-focus">Reveal focus</button>
+      ${renderRevealToggle(viewModel.focusDrawer.revealed)}
     </section>
     <section class="focus-peek" aria-label="Focus Peek">
       <div class="section-head"><span>Focus Peek</span><span>Titles hidden</span></div>
@@ -44,6 +44,12 @@ export function mountApp(container, viewModel) {
 function renderShortcut(shortcut) {
   if (!shortcut.label || !shortcut.slot) return "";
   return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">${escapeHtml(shortcut.label)}</button>`;
+}
+
+function renderRevealToggle(isRevealed) {
+  const action = isRevealed ? "hide-focus" : "reveal-focus";
+  const label = isRevealed ? "Hide" : "Reveal focus";
+  return `<button class="reveal-button" type="button" data-action="${action}" aria-expanded="${isRevealed ? "true" : "false"}">${label}</button>`;
 }
 
 function renderPeekItem(item) {
@@ -67,7 +73,6 @@ function renderFocusDrawer(drawer) {
           </div>
           <div class="drawer-actions">
             <span>${escapeHtml(drawer.autoHideLabel)}</span>
-            <button class="button" type="button" data-action="hide-focus">Hide</button>
           </div>
         </div>
         <section class="top-tasks" aria-label="Top 3 Today Items">

@@ -61,6 +61,21 @@ test("new tab reveals and hides focus drawer intentionally", async (t) => {
   assert.doesNotMatch(harness.app.innerHTML, /Polish narrative and risks section/);
 });
 
+test("new tab turns the global reveal button into the only hide control", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  assert.match(harness.app.innerHTML, /data-action="reveal-focus"[^>]*>Reveal focus<\/button>/);
+  assert.equal(countAction(harness.app.innerHTML, "hide-focus"), 0);
+
+  await harness.click({ action: "reveal-focus" });
+
+  assert.match(harness.app.innerHTML, /data-action="hide-focus"[^>]*>Hide<\/button>/);
+  assert.equal(countAction(harness.app.innerHTML, "hide-focus"), 1);
+  assert.doesNotMatch(harness.app.innerHTML, /data-action="reveal-focus"/);
+});
+
 test("new tab toggles reviewed focus cards open and closed", async (t) => {
   const appData = createInitialData(NOW);
   const harness = await loadNewtabHarness(appData);
@@ -136,6 +151,10 @@ test("new tab opens shortcut slots without exposing urls in the DOM action", asy
   assert.deepEqual(harness.createdTabs, [{ url: "https://mail.google.com/", active: true }]);
 });
 
+
+function countAction(html, action) {
+  return (html.match(new RegExp(`data-action="${action}"`, "g")) ?? []).length;
+}
 
 async function loadNewtabHarness(initialData) {
   const originalDocument = globalThis.document;
