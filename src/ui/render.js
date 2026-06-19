@@ -13,8 +13,8 @@ export function renderAppHtml(viewModel) {
         <button class="button primary" data-action="quick-add">Quick Add</button>
       </div>
     </header>
-    <section class="safe-home" aria-label="Safe Home">
-      <div class="safe-summary">
+    <section class="safe-home safe-stage" aria-label="Safe Home">
+      <div class="safe-summary ritual-summary">
         <div>
           <div class="summary-label">${escapeHtml(safeHome.privacyLabel)}</div>
           <h1>${escapeHtml(safeHome.headline)}</h1>
@@ -24,14 +24,11 @@ export function renderAppHtml(viewModel) {
           <div>${escapeHtml(safeHome.metaLine)}</div>
         </div>
       </div>
-      <div class="shortcut-row" aria-label="Pinned shortcuts">
+      <div class="shortcut-dock" aria-label="Google shortcuts">
         ${safeHome.shortcuts.map(renderShortcut).join("")}
       </div>
       ${renderRevealToggle(viewModel.focusDrawer.revealed)}
-    </section>
-    <section class="focus-peek" aria-label="Focus Peek">
-      <div class="section-head"><span>Focus Peek</span><span>Titles hidden</span></div>
-      ${safeHome.peekItems.length > 0 ? safeHome.peekItems.map(renderPeekItem).join("") : `<div class="empty-line">No ready items hidden.</div>`}
+      ${renderFocusPeek(safeHome)}
     </section>
     ${viewModel.focusDrawer.revealed ? renderFocusDrawer(viewModel.focusDrawer) : ""}
   `;
@@ -43,13 +40,29 @@ export function mountApp(container, viewModel) {
 
 function renderShortcut(shortcut) {
   if (!shortcut.label || !shortcut.slot) return "";
-  return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">${escapeHtml(shortcut.label)}</button>`;
+  const label = escapeHtml(shortcut.label);
+  const initial = label.slice(0, 1).toUpperCase();
+  return `
+    <button class="shortcut shortcut-tile" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">
+      <span class="shortcut-mark" aria-hidden="true">${initial}</span>
+      <span class="shortcut-label">${label}</span>
+    </button>
+  `;
 }
 
 function renderRevealToggle(isRevealed) {
   const action = isRevealed ? "hide-focus" : "reveal-focus";
   const label = isRevealed ? "Hide" : "Reveal focus";
   return `<button class="reveal-button" type="button" data-action="${action}" aria-expanded="${isRevealed ? "true" : "false"}">${label}</button>`;
+}
+
+function renderFocusPeek(safeHome) {
+  return `
+    <div class="focus-peek" aria-label="Focus Peek">
+      <div class="section-head"><span>Focus Peek</span><span>Titles hidden</span></div>
+      ${safeHome.peekItems.length > 0 ? safeHome.peekItems.map(renderPeekItem).join("") : `<div class="empty-line">No ready items hidden.</div>`}
+    </div>
+  `;
 }
 
 function renderPeekItem(item) {

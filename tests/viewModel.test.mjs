@@ -222,10 +222,27 @@ test("safe home renders Google Maps, Gmail, and Drive shortcuts", () => {
   const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
 
   assert.match(html, /data-action="open-shortcut"/);
-  assert.match(html, />Maps<\/button>/);
-  assert.match(html, />Gmail<\/button>/);
-  assert.match(html, />Drive<\/button>/);
-  assert.doesNotMatch(html, />Search<\/button>/);
+  assert.match(html, /class="shortcut-label">Maps<\/span>/);
+  assert.match(html, /class="shortcut-label">Gmail<\/span>/);
+  assert.match(html, /class="shortcut-label">Drive<\/span>/);
+  assert.doesNotMatch(html, /class="shortcut-label">Search<\/span>/);
+});
+
+test("safe home renders ritual structure with shortcut dock before reveal", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+
+  assert.match(html, /class="safe-home safe-stage"/);
+  assert.match(html, /class="safe-summary ritual-summary"/);
+  assert.match(html, /class="shortcut-dock"/);
+  assert.match(html, /class="shortcut shortcut-tile"/);
+  assert.match(html, /class="shortcut-mark" aria-hidden="true">M<\/span>/);
+  assert.match(html, /class="shortcut-label">Maps<\/span>/);
+  assert.ok(html.indexOf(`class="shortcut-dock"`) < html.indexOf(`class="reveal-button"`));
+  const safeHomeStart = html.indexOf(`class="safe-home safe-stage"`);
+  const safeHomeEnd = html.indexOf(`</section>`, safeHomeStart);
+  const focusPeekIndex = html.indexOf(`class="focus-peek"`);
+  assert.ok(focusPeekIndex > safeHomeStart && focusPeekIndex < safeHomeEnd);
 });
 
 test("default safe home does not leak title-derived peek ids", () => {
