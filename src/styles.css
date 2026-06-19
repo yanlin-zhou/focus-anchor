@@ -1186,11 +1186,25 @@ button:disabled {
 }
 
 .manage-heading {
-  border: 1px solid #d7bd97;
+  border: 1px solid rgba(121, 60, 21, 0.22);
   border-radius: 12px;
-  background: var(--panel);
+  background:
+    linear-gradient(135deg, rgba(240, 214, 173, 0.9), rgba(255, 253, 247, 0.82)),
+    var(--panel);
   box-shadow: var(--soft-shadow);
   padding: 20px;
+}
+
+.manage-kicker {
+  margin: 0 0 8px;
+}
+
+.manage-subtitle {
+  margin: 10px 0 0;
+  max-width: 620px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .manage-grid {
@@ -1311,10 +1325,10 @@ button:disabled {
 .shortcut-editor {
   display: grid;
   gap: 10px;
-  border: 1px solid rgba(61, 47, 29, 0.12);
+  border: 1px solid rgba(38, 49, 47, 0.1);
   border-radius: 8px;
   padding: 12px;
-  background: rgba(255, 252, 246, 0.72);
+  background: rgba(255, 252, 246, 0.78);
 }
 
 .form-row {
