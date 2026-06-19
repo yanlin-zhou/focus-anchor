@@ -214,7 +214,18 @@ test("safe home view model excludes sensitive task and card titles", () => {
   assert.match(serializedSafeHome, /anchors ready/);
   assert.equal(viewModel.safeHome.peekItems.length, 3);
   assert.equal(viewModel.safeHome.shortcuts.length, 3);
-  assert.deepEqual(viewModel.safeHome.shortcuts.map((shortcut) => shortcut.label), ["Maps", "Gmail", "Search"]);
+  assert.deepEqual(viewModel.safeHome.shortcuts.map((shortcut) => shortcut.label), ["Maps", "Gmail", "Drive"]);
+});
+
+test("safe home renders Google Maps, Gmail, and Drive shortcuts", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+
+  assert.match(html, /data-action="open-shortcut"/);
+  assert.match(html, />Maps<\/button>/);
+  assert.match(html, />Gmail<\/button>/);
+  assert.match(html, />Drive<\/button>/);
+  assert.doesNotMatch(html, />Search<\/button>/);
 });
 
 test("default safe home does not leak title-derived peek ids", () => {
@@ -278,7 +289,7 @@ test("default rendered home does not include sensitive focus text", () => {
   assert.match(html, /Reveal focus/);
   assert.match(html, /Work Doc/);
   assert.match(html, /Gmail/);
-  assert.match(html, /Search/);
+  assert.match(html, /Drive/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="1"/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="2"/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="3"/);
@@ -287,7 +298,7 @@ test("default rendered home does not include sensitive focus text", () => {
   assert.doesNotMatch(html, /internal\.example\.com/);
   assert.doesNotMatch(html, /shortcut-internal-doc/);
   assert.doesNotMatch(html, /Calendar/);
-  assert.doesNotMatch(html, /Drive/);
+  assert.doesNotMatch(html, /Search/);
   assert.doesNotMatch(html, /Lark/);
   assert.doesNotMatch(html, /data-shortcut-url=/);
   assert.doesNotMatch(html, /<a class="shortcut"/);
