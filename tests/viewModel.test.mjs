@@ -228,7 +228,7 @@ test("safe home renders Google Maps, Gmail, and Drive shortcuts", () => {
   assert.doesNotMatch(html, /class="shortcut-label">Search<\/span>/);
 });
 
-test("safe home renders ritual structure with shortcut dock before reveal", () => {
+test("safe home renders ritual structure with shortcut dock in the header utility layer", () => {
   const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
   const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
 
@@ -238,7 +238,8 @@ test("safe home renders ritual structure with shortcut dock before reveal", () =
   assert.match(html, /class="shortcut shortcut-tile"/);
   assert.match(html, /class="shortcut-mark" aria-hidden="true">M<\/span>/);
   assert.match(html, /class="shortcut-label">Maps<\/span>/);
-  assert.ok(html.indexOf(`class="shortcut-dock"`) < html.indexOf(`class="reveal-button"`));
+  assert.ok(html.indexOf(`class="top-actions"`) < html.indexOf(`class="shortcut-dock"`));
+  assert.ok(html.indexOf(`class="shortcut-dock"`) < html.indexOf(`class="safe-home safe-stage"`));
   const safeHomeStart = html.indexOf(`class="safe-home safe-stage"`);
   const safeHomeEnd = html.indexOf(`</section>`, safeHomeStart);
   const focusPeekIndex = html.indexOf(`class="focus-peek"`);
@@ -364,7 +365,9 @@ test("styles include ritual safe home and shortcut dock selectors", () => {
     assert.match(css, new RegExp(`${escaped}\\s*\\{`));
   }
 
-  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+  assert.match(css, /\.top-actions \.shortcut-dock\s*\{/);
+  assert.match(css, /\.safe-stage\s*\{[\s\S]*grid-template-areas:\s*"summary summary"\s*"peek reveal";/);
+  assert.doesNotMatch(css, /"peek dock"/);
 });
 
 test("styles keep ritual home responsive and motion-safe", () => {
@@ -374,7 +377,7 @@ test("styles keep ritual home responsive and motion-safe", () => {
   assert.match(reducedMotionBlock, /animation-duration:\s*0\.001ms\s*!important;/);
   assert.match(reducedMotionBlock, /transition-duration:\s*0\.001ms\s*!important;/);
   assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.safe-stage\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
-  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.top-actions \.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\);/);
   assert.match(css, /@media \(max-width: 620px\)[\s\S]*h1\s*\{[\s\S]*font-size:\s*34px;/);
 });
 

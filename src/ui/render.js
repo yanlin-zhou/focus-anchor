@@ -9,6 +9,9 @@ export function renderAppHtml(viewModel) {
       <div class="top-actions">
         <span>${escapeHtml(viewModel.dateLabel)}</span>
         <span>Snapshot saved</span>
+        <div class="shortcut-dock" aria-label="Google shortcuts">
+          ${safeHome.shortcuts.map(renderShortcut).join("")}
+        </div>
         <button class="button" data-action="open-manage">Manage</button>
         <button class="button primary" data-action="quick-add">Quick Add</button>
       </div>
@@ -23,9 +26,6 @@ export function renderAppHtml(viewModel) {
           <div>${escapeHtml(safeHome.detail)}</div>
           <div>${escapeHtml(safeHome.metaLine)}</div>
         </div>
-      </div>
-      <div class="shortcut-dock" aria-label="Google shortcuts">
-        ${safeHome.shortcuts.map(renderShortcut).join("")}
       </div>
       ${renderRevealToggle(viewModel.focusDrawer.revealed)}
       ${renderFocusPeek(safeHome)}
