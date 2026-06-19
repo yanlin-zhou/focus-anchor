@@ -143,10 +143,13 @@ test("styles include required setup selectors and responsive shell", () => {
     ".setup-shell",
     ".setup-preview",
     ".setup-panel",
+    ".setup-heading",
+    ".setup-actions",
     ".template-grid",
     ".template-option",
     ".setup-card-list",
     ".draft-card",
+    ".draft-card-stats",
     ".form-error"
   ];
 
@@ -155,4 +158,6 @@ test("styles include required setup selectors and responsive shell", () => {
   }
   assert.match(css, /button:disabled\s*\{/);
   assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.setup-shell\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+  assert.match(css, /\.setup-panel,\s*\.setup-preview\s*\{[^}]*background:\s*var\(--raised\);/);
+  assert.match(css, /\.template-option:hover\s*\{[^}]*background:\s*#fff4e3;/);
 });
