@@ -365,3 +365,24 @@ test("styles include ritual safe home and shortcut dock selectors", () => {
 
   assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
 });
+
+test("styles include calm reveal workbench selectors", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const selectors = [
+    ".focus-drawer",
+    ".drawer-panel",
+    ".drawer-head",
+    ".top-tasks",
+    ".top-task",
+    ".goal-card",
+    ".backlog-collapsed",
+    ".parking"
+  ];
+
+  for (const selector of selectors) {
+    assert.match(css, new RegExp(`${selector.replace(".", "\\.")}\\s*\\{`));
+  }
+
+  assert.match(css, /\.drawer-panel\s*\{[\s\S]*box-shadow:\s*var\(--shadow\);/);
+  assert.match(css, /\.top-task\s*\{[\s\S]*grid-template-rows:\s*auto 1fr auto;/);
+});
