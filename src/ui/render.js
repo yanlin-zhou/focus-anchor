@@ -2,6 +2,8 @@ import { isAllowedLinkUrl } from "../domain/schema.js";
 
 export function renderAppHtml(viewModel) {
   const safeHome = viewModel.safeHome;
+  const quickAdd = viewModel.quickAdd ?? { open: false, error: "" };
+  const safeHomeStateClass = viewModel.focusDrawer.revealed ? "is-focus-revealed" : "is-focus-hidden";
 
   return `
     <header class="topbar">
@@ -9,12 +11,16 @@ export function renderAppHtml(viewModel) {
       <div class="top-actions">
         <span>${escapeHtml(viewModel.dateLabel)}</span>
         <span>Snapshot saved</span>
-        <button class="button" data-action="open-manage">Manage</button>
-        <button class="button primary" data-action="quick-add">Quick Add</button>
+        <div class="shortcut-dock" aria-label="Google shortcuts">
+          ${safeHome.shortcuts.map(renderShortcut).join("")}
+        </div>
+        <button class="button" type="button" data-action="open-manage">Manage</button>
+        <button class="button primary" type="button" data-action="quick-add" aria-expanded="${quickAdd.open ? "true" : "false"}">Quick Add</button>
       </div>
     </header>
-    <section class="safe-home" aria-label="Safe Home">
-      <div class="safe-summary">
+    ${renderQuickAddComposer(quickAdd)}
+    <section class="safe-home safe-stage ${safeHomeStateClass}" aria-label="Safe Home">
+      <div class="safe-summary ritual-summary">
         <div>
           <div class="summary-label">${escapeHtml(safeHome.privacyLabel)}</div>
           <h1>${escapeHtml(safeHome.headline)}</h1>
@@ -24,14 +30,8 @@ export function renderAppHtml(viewModel) {
           <div>${escapeHtml(safeHome.metaLine)}</div>
         </div>
       </div>
-      <div class="shortcut-row" aria-label="Pinned shortcuts">
-        ${safeHome.shortcuts.map(renderShortcut).join("")}
-      </div>
       ${renderRevealToggle(viewModel.focusDrawer.revealed)}
-    </section>
-    <section class="focus-peek" aria-label="Focus Peek">
-      <div class="section-head"><span>Focus Peek</span><span>Titles hidden</span></div>
-      ${safeHome.peekItems.length > 0 ? safeHome.peekItems.map(renderPeekItem).join("") : `<div class="empty-line">No ready items hidden.</div>`}
+      ${renderFocusPeek(safeHome)}
     </section>
     ${viewModel.focusDrawer.revealed ? renderFocusDrawer(viewModel.focusDrawer) : ""}
   `;
@@ -43,13 +43,45 @@ export function mountApp(container, viewModel) {
 
 function renderShortcut(shortcut) {
   if (!shortcut.label || !shortcut.slot) return "";
-  return `<button class="shortcut" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">${escapeHtml(shortcut.label)}</button>`;
+  const label = escapeHtml(shortcut.label);
+  const initial = label.slice(0, 1).toUpperCase();
+  return `
+    <button class="shortcut shortcut-tile" type="button" data-action="open-shortcut" data-shortcut-slot="${escapeHtml(shortcut.slot)}">
+      <span class="shortcut-mark" aria-hidden="true">${initial}</span>
+      <span class="shortcut-label">${label}</span>
+    </button>
+  `;
 }
 
 function renderRevealToggle(isRevealed) {
   const action = isRevealed ? "hide-focus" : "reveal-focus";
   const label = isRevealed ? "Hide" : "Reveal focus";
   return `<button class="reveal-button" type="button" data-action="${action}" aria-expanded="${isRevealed ? "true" : "false"}">${label}</button>`;
+}
+
+function renderQuickAddComposer(quickAdd) {
+  if (!quickAdd.open) return "";
+
+  return `
+    <form class="quick-add-composer" data-action="quick-add-item" aria-label="Quick Add">
+      <label class="visually-hidden" for="quick-add-title">One thing worth protecting today</label>
+      <input id="quick-add-title" class="quick-add-input" data-quick-add-input name="title" placeholder="One thing worth protecting today" autocomplete="off">
+      <div class="quick-add-actions">
+        <button class="button primary" type="submit">Add</button>
+        <button class="button text" type="button" data-action="quick-add-cancel">Cancel</button>
+      </div>
+      ${quickAdd.error ? `<div class="form-error quick-add-error">${escapeHtml(quickAdd.error)}</div>` : ""}
+    </form>
+  `;
+}
+
+function renderFocusPeek(safeHome) {
+  return `
+    <div class="focus-peek" aria-label="Focus Peek">
+      <div class="section-head"><span>Focus Peek</span><span>Titles hidden</span></div>
+      ${safeHome.peekItems.length > 0 ? safeHome.peekItems.map(renderPeekItem).join("") : `<div class="empty-line">No ready items hidden.</div>`}
+    </div>
+  `;
 }
 
 function renderPeekItem(item) {
@@ -76,6 +108,7 @@ function renderFocusDrawer(drawer) {
           </div>
         </div>
         <section class="top-tasks" aria-label="Top 3 Today Items">
+          <div class="section-head top-tasks-head"><span>Top 3 Today Items</span><span>Visible after reveal</span></div>
           ${drawer.topTasks.length > 0 ? drawer.topTasks.map(renderTopTask).join("") : renderEmptyTopTasks()}
         </section>
         <section class="focus-lane" aria-label="Focus Lane">

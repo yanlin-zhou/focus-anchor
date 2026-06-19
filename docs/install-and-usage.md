@@ -38,7 +38,7 @@ git pull --ff-only origin main
 - 安全摘要：只显示 `3 anchors ready`、`1 time-sensitive check today` 这类不泄密的信息。
 - `Focus Peek`：用抽象条目提醒你有 Top 3，但默认不显示任务名、项目名或排序原因。
 - `Reveal focus`：点击后才显示真实 Top 3 和卡片上下文。
-- Google-style shortcuts：默认保留 `Maps`、`Gmail`、`Search` 三个高频入口。
+- Google-style shortcuts：默认保留 `Maps`、`Gmail`、`Drive` 三个高频入口。
 - `Manage`：编辑卡片、数据和快捷入口。
 
 ## 3. 第一次无代码设置

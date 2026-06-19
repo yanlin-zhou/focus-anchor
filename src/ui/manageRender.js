@@ -12,8 +12,9 @@ export function renderManageHtml(viewModel) {
       </aside>
       <section class="manage-main">
         <div class="manage-heading">
-          <p class="summary-label">Local data</p>
+          <p class="summary-label manage-kicker">Local-only control panel</p>
           <h1>Manage Focus Anchor</h1>
+          <p class="manage-subtitle">Cards, shortcuts, rules, and local data stay in this browser.</p>
         </div>
         <div class="manage-grid">
           <section class="manage-list" data-section="cards" aria-label="Cards">

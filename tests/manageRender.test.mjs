@@ -54,6 +54,18 @@ test("renderManageHtml renders manage shell sections and data actions", () => {
   assert.match(html, /data-action="confirm-reset-data" disabled/);
 });
 
+test("renderManageHtml renders local control panel heading and shortcut labels", () => {
+  const html = renderManageHtml(toManageViewModel(createInitialData("2026-05-30T09:12:00.000Z")));
+
+  assert.match(html, /class="[^"]*\bmanage-kicker\b[^"]*"/);
+  assert.match(html, /Local-only control panel/);
+  assert.match(html, /class="[^"]*\bmanage-subtitle\b[^"]*"/);
+  assert.match(html, /Cards, shortcuts, rules, and local data stay in this browser\./);
+  assert.match(html, /Maps/);
+  assert.match(html, /Gmail/);
+  assert.match(html, /Drive/);
+});
+
 test("renderManageHtml escapes card text", () => {
   const data = createInitialData(NOW);
   data.goalCards[0] = {

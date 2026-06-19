@@ -214,7 +214,49 @@ test("safe home view model excludes sensitive task and card titles", () => {
   assert.match(serializedSafeHome, /anchors ready/);
   assert.equal(viewModel.safeHome.peekItems.length, 3);
   assert.equal(viewModel.safeHome.shortcuts.length, 3);
-  assert.deepEqual(viewModel.safeHome.shortcuts.map((shortcut) => shortcut.label), ["Maps", "Gmail", "Search"]);
+  assert.deepEqual(viewModel.safeHome.shortcuts.map((shortcut) => shortcut.label), ["Maps", "Gmail", "Drive"]);
+});
+
+test("safe home renders Google Maps, Gmail, and Drive shortcuts", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+
+  assert.match(html, /data-action="open-shortcut"/);
+  assert.match(html, /class="shortcut-label">Maps<\/span>/);
+  assert.match(html, /class="shortcut-label">Gmail<\/span>/);
+  assert.match(html, /class="shortcut-label">Drive<\/span>/);
+  assert.doesNotMatch(html, /class="shortcut-label">Search<\/span>/);
+});
+
+test("safe home renders ritual structure with shortcut dock in the header utility layer", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+
+  assert.match(html, /class="safe-home safe-stage is-focus-hidden"/);
+  assert.match(html, /class="safe-summary ritual-summary"/);
+  assert.match(html, /class="shortcut-dock"/);
+  assert.match(html, /class="shortcut shortcut-tile"/);
+  assert.match(html, /class="shortcut-mark" aria-hidden="true">M<\/span>/);
+  assert.match(html, /class="shortcut-label">Maps<\/span>/);
+  assert.ok(html.indexOf(`class="top-actions"`) < html.indexOf(`class="shortcut-dock"`));
+  assert.ok(html.indexOf(`class="shortcut-dock"`) < html.indexOf(`class="safe-home safe-stage is-focus-hidden"`));
+  const safeHomeStart = html.indexOf(`class="safe-home safe-stage is-focus-hidden"`);
+  const safeHomeEnd = html.indexOf(`</section>`, safeHomeStart);
+  const focusPeekIndex = html.indexOf(`class="focus-peek"`);
+  assert.ok(focusPeekIndex > safeHomeStart && focusPeekIndex < safeHomeEnd);
+});
+
+test("safe home marks hidden and revealed composition states", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const hiddenHtml = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+  const revealedHtml = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z", {
+    focusRevealed: true
+  }));
+
+  assert.match(hiddenHtml, /class="safe-home safe-stage is-focus-hidden"/);
+  assert.doesNotMatch(hiddenHtml, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.match(revealedHtml, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.doesNotMatch(revealedHtml, /class="safe-home safe-stage is-focus-hidden"/);
 });
 
 test("default safe home does not leak title-derived peek ids", () => {
@@ -278,7 +320,7 @@ test("default rendered home does not include sensitive focus text", () => {
   assert.match(html, /Reveal focus/);
   assert.match(html, /Work Doc/);
   assert.match(html, /Gmail/);
-  assert.match(html, /Search/);
+  assert.match(html, /Drive/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="1"/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="2"/);
   assert.match(html, /data-action="open-shortcut" data-shortcut-slot="3"/);
@@ -287,7 +329,7 @@ test("default rendered home does not include sensitive focus text", () => {
   assert.doesNotMatch(html, /internal\.example\.com/);
   assert.doesNotMatch(html, /shortcut-internal-doc/);
   assert.doesNotMatch(html, /Calendar/);
-  assert.doesNotMatch(html, /Drive/);
+  assert.doesNotMatch(html, /Search/);
   assert.doesNotMatch(html, /Lark/);
   assert.doesNotMatch(html, /data-shortcut-url=/);
   assert.doesNotMatch(html, /<a class="shortcut"/);
@@ -306,6 +348,7 @@ test("revealed drawer includes sensitive top task details", () => {
   }));
 
   assert.match(html, /Top 3 Today Items/);
+  assert.match(html, /<div class="section-head top-tasks-head"><span>Top 3 Today Items<\/span><span>Visible after reveal<\/span><\/div>/);
   assert.match(html, /Polish narrative and risks section/);
   assert.match(html, /Biweekly report/);
   assert.match(html, /Auto-hide/);
@@ -315,4 +358,71 @@ test("styles include a deadline goal type tag", () => {
   const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
 
   assert.match(css, /\.tag-deadline\s*\{/);
+});
+
+test("styles include ritual safe home and shortcut dock selectors", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const selectors = [
+    ".safe-stage",
+    ".safe-stage::before",
+    ".safe-stage::after",
+    ".ritual-summary",
+    ".shortcut-dock",
+    ".shortcut-tile",
+    ".shortcut-mark",
+    ".shortcut-label"
+  ];
+
+  for (const selector of selectors) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    assert.match(css, new RegExp(`${escaped}\\s*\\{`));
+  }
+
+  assert.match(css, /\.top-actions \.shortcut-dock\s*\{/);
+  assert.match(css, /\.safe-stage\s*\{[\s\S]*grid-template-areas:\s*"summary summary"\s*"peek reveal";/);
+  assert.doesNotMatch(css, /"peek dock"/);
+});
+
+test("styles optically center the collapsed safe home stage", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(css, /\.page\s*\{[\s\S]*width:\s*min\(1420px, calc\(100vw - 80px\)\);/);
+  assert.match(css, /\.page\s*\{[\s\S]*min-height:\s*100svh;/);
+  assert.match(css, /\.safe-home\.is-focus-hidden\s*\{[\s\S]*margin-top:\s*clamp\(64px, 12vh, 148px\);/);
+  assert.match(css, /\.safe-home\.is-focus-revealed\s*\{[\s\S]*margin-top:\s*30px;/);
+  assert.match(css, /\.safe-stage\s*\{[\s\S]*min-height:\s*clamp\(410px, 42svh, 470px\);/);
+  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.safe-home\.is-focus-hidden\s*\{[\s\S]*margin-top:\s*clamp\(44px, 7vh, 76px\);/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.safe-home\.is-focus-hidden,\s*\.safe-home\.is-focus-revealed\s*\{[\s\S]*margin-top:\s*26px;/);
+});
+
+test("styles keep ritual home responsive and motion-safe", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const reducedMotionBlock = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?^}/m)?.[0] ?? "";
+
+  assert.match(reducedMotionBlock, /animation-duration:\s*0\.001ms\s*!important;/);
+  assert.match(reducedMotionBlock, /transition-duration:\s*0\.001ms\s*!important;/);
+  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.safe-stage\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.top-actions \.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\);/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*h1\s*\{[\s\S]*font-size:\s*34px;/);
+});
+
+test("styles include calm reveal workbench selectors", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const selectors = [
+    ".focus-drawer",
+    ".drawer-panel",
+    ".drawer-head",
+    ".top-tasks",
+    ".top-task",
+    ".goal-card",
+    ".backlog-collapsed",
+    ".parking"
+  ];
+
+  for (const selector of selectors) {
+    assert.match(css, new RegExp(`${selector.replace(".", "\\.")}\\s*\\{`));
+  }
+
+  assert.match(css, /\.drawer-panel\s*\{[\s\S]*box-shadow:\s*var\(--shadow\);/);
+  assert.match(css, /\.top-task\s*\{[\s\S]*grid-template-rows:\s*auto 1fr auto;/);
 });

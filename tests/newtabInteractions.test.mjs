@@ -151,6 +151,46 @@ test("new tab opens shortcut slots without exposing urls in the DOM action", asy
   assert.deepEqual(harness.createdTabs, [{ url: "https://mail.google.com/", active: true }]);
 });
 
+test("new tab quick add uses an inline composer and persists the new item visibly", async (t) => {
+  const appData = createInitialData(NOW);
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.click({ action: "quick-add" });
+  assert.match(harness.app.innerHTML, /data-action="quick-add-item"/);
+
+  await harness.submit({ action: "quick-add-item" }, { title: "Capture the invoice follow-up" });
+  const saved = harness.latestSavedData();
+  const addedItem = saved.goalCards
+    .flatMap((card) => card.todayItems)
+    .find((item) => item.title === "Capture the invoice follow-up");
+
+  assert.equal(addedItem?.status, "open");
+  assert.equal(addedItem?.source, "manual");
+  assert.match(harness.app.innerHTML, /Capture the invoice follow-up/);
+  assert.match(harness.app.innerHTML, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.match(harness.app.innerHTML, /data-card-expanded="true"/);
+});
+
+test("new tab quick add creates an anchor from the empty complete state", async (t) => {
+  const appData = createEmptyAppData(NOW);
+  appData.setup.completedAt = NOW;
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.click({ action: "quick-add" });
+  await harness.submit({ action: "quick-add-item" }, { title: "abc" });
+  const saved = harness.latestSavedData();
+
+  assert.equal(saved.goalCards.length, 1);
+  assert.equal(saved.goalCards[0].status, "active");
+  assert.equal(saved.goalCards[0].todayItems[0].title, "abc");
+  assert.match(harness.app.innerHTML, /abc/);
+  assert.match(harness.app.innerHTML, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.match(harness.app.innerHTML, /data-card-expanded="true"/);
+  assert.doesNotMatch(harness.app.innerHTML, /No active anchors/);
+});
+
 
 function countAction(html, action) {
   return (html.match(new RegExp(`data-action="${action}"`, "g")) ?? []).length;
@@ -161,6 +201,7 @@ async function loadNewtabHarness(initialData) {
   const originalWindow = globalThis.window;
   const originalChrome = globalThis.chrome;
   const originalDate = globalThis.Date;
+  const originalFormData = globalThis.FormData;
   const listeners = new Map();
   const documentListeners = new Map();
   const windowListeners = new Map();
@@ -193,6 +234,15 @@ async function loadNewtabHarness(initialData) {
 
     static now() {
       return originalDate.parse(NOW);
+    }
+  };
+  globalThis.FormData = class FakeFormData {
+    constructor(form) {
+      this.form = form;
+    }
+
+    get(name) {
+      return this.form.fields?.[name] ?? "";
     }
   };
   globalThis.document = {
@@ -252,6 +302,24 @@ async function loadNewtabHarness(initialData) {
         }
       });
     },
+    async submit(dataset, fields = {}) {
+      const listener = listeners.get("submit");
+      assert.equal(typeof listener, "function");
+      await listener({
+        preventDefault() {},
+        target: {
+          dataset,
+          fields,
+          closest(selector) {
+            if (selector === `form[data-action='${dataset.action}']`) return this;
+            return null;
+          }
+        }
+      });
+    },
+    latestSavedData() {
+      return this.storage.saved.at(-1)?.["focus-anchor-data"] ?? null;
+    },
     async keydown(key, eventOptions = {}) {
       const listener = documentListeners.get("keydown");
       assert.equal(typeof listener, "function");
@@ -269,6 +337,7 @@ async function loadNewtabHarness(initialData) {
     },
     restore() {
       globalThis.Date = originalDate;
+      globalThis.FormData = originalFormData;
       globalThis.document = originalDocument;
       globalThis.window = originalWindow;
       globalThis.chrome = originalChrome;

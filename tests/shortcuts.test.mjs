@@ -12,13 +12,13 @@ import { createEmptyAppData } from "../src/domain/emptyData.js";
 
 const NOW = "2026-05-30T09:00:00.000Z";
 
-test("default shortcuts include Maps, Gmail, and Search in pinned order", () => {
+test("default shortcuts include Maps, Gmail, and Drive in pinned order", () => {
   const shortcuts = createDefaultShortcuts(NOW);
 
   assert.deepEqual(shortcuts.map((shortcut) => shortcut.id), [
     "shortcut-maps",
     "shortcut-gmail",
-    "shortcut-search"
+    "shortcut-drive"
   ]);
   assert.deepEqual(shortcuts.map((shortcut) => shortcut.position), [1, 2, 3]);
   assert.equal(shortcuts.every((shortcut) => shortcut.pinned === true), true);
@@ -57,7 +57,29 @@ test("ensureShortcuts upgrades legacy default shortcuts to the current top three
   assert.deepEqual(migrated.shortcuts.map((shortcut) => shortcut.id), [
     "shortcut-maps",
     "shortcut-gmail",
-    "shortcut-search"
+    "shortcut-drive"
+  ]);
+  assert.deepEqual(migrated.shortcuts.map((shortcut) => shortcut.position), [1, 2, 3]);
+  assert.equal(migrated.updatedAt, "2026-05-30T10:00:00.000Z");
+});
+
+test("ensureShortcuts upgrades previous Maps Gmail Search defaults to Maps Gmail Drive", () => {
+  const data = {
+    ...createEmptyAppData(NOW),
+    updatedAt: NOW,
+    shortcuts: [
+      { id: "shortcut-maps", label: "Maps", url: "https://maps.google.com/", pinned: true, position: 1, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-gmail", label: "Gmail", url: "https://mail.google.com/", pinned: true, position: 2, createdAt: NOW, updatedAt: NOW },
+      { id: "shortcut-search", label: "Search", url: "https://www.google.com/", pinned: true, position: 3, createdAt: NOW, updatedAt: NOW }
+    ]
+  };
+
+  const migrated = ensureShortcuts(data, "2026-05-30T10:00:00.000Z");
+
+  assert.deepEqual(migrated.shortcuts.map((shortcut) => shortcut.id), [
+    "shortcut-maps",
+    "shortcut-gmail",
+    "shortcut-drive"
   ]);
   assert.deepEqual(migrated.shortcuts.map((shortcut) => shortcut.position), [1, 2, 3]);
   assert.equal(migrated.updatedAt, "2026-05-30T10:00:00.000Z");
@@ -106,16 +128,16 @@ test("updateShortcut edits safe fields and rejects unsafe urls", () => {
 
 test("updateShortcut moves shortcut to requested position", () => {
   const data = ensureShortcuts(createEmptyAppData(NOW), NOW);
-  const updated = updateShortcut(data, "shortcut-search", {
-    position: 3
+  const updated = updateShortcut(data, "shortcut-drive", {
+    position: 1
   }, "2026-05-30T11:00:00.000Z");
 
   assert.deepEqual(updated.shortcuts.map((shortcut) => shortcut.id), [
+    "shortcut-drive",
     "shortcut-maps",
-    "shortcut-gmail",
-    "shortcut-search"
+    "shortcut-gmail"
   ]);
-  assert.equal(updated.shortcuts.find((shortcut) => shortcut.id === "shortcut-search").position, 3);
+  assert.equal(updated.shortcuts.find((shortcut) => shortcut.id === "shortcut-drive").position, 1);
 });
 
 test("resetShortcuts restores defaults", () => {

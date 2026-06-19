@@ -181,7 +181,7 @@ test("resetShortcuts restores default shortcut set", () => {
   assert.deepEqual(next.shortcuts.map((shortcut) => shortcut.id), [
     "shortcut-maps",
     "shortcut-gmail",
-    "shortcut-search"
+    "shortcut-drive"
   ]);
   assert.equal(validateAppData(next).ok, true);
 });

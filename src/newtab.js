@@ -11,7 +11,7 @@ import { toViewModel } from "./ui/viewModel.js";
 import { mountApp } from "./ui/render.js";
 import { renderNotSetUpHtml, renderSetupHtml } from "./ui/setupRender.js";
 import { toSetupViewModel } from "./ui/setupViewModel.js";
-import { addTodayItem, completeTodayItem, pinCard, snoozeCard } from "./ui/actions.js";
+import { completeTodayItem, pinCard, quickAddTodayItem, snoozeCard } from "./ui/actions.js";
 
 const REVEAL_DURATION_MS = 20_000;
 const app = document.querySelector("#app");
@@ -20,13 +20,44 @@ const repo = createChromeRepository();
 const uiState = {
   expandedCardIds: new Set(),
   backlogExpanded: false,
-  focusRevealed: false
+  focusRevealed: false,
+  quickAddOpen: false,
+  quickAddError: ""
 };
 let revealTimerId = null;
 let appData = ensureSetupMeta(await repo.load());
 await refresh();
 
 app.addEventListener("submit", async (event) => {
+  const quickAddForm = event.target.closest("form[data-action='quick-add-item']");
+  if (quickAddForm) {
+    event.preventDefault();
+    if (getSetupState(appData) !== "complete") return;
+
+    const nowIso = new Date().toISOString();
+    const todayKey = toLocalDateKey(nowIso);
+    const fields = new FormData(quickAddForm);
+    const title = String(fields.get("title") ?? "").trim();
+
+    if (!title) {
+      uiState.quickAddOpen = true;
+      uiState.quickAddError = "Add a title first.";
+      await refresh();
+      return;
+    }
+
+    const result = quickAddTodayItem(appData, quickAddTargetCardId(appData, todayKey), title, todayKey, nowIso);
+    appData = result.data;
+    uiState.quickAddOpen = false;
+    uiState.quickAddError = "";
+    uiState.focusRevealed = true;
+    uiState.expandedCardIds.add(result.cardId);
+    scheduleRevealHide();
+    await repo.save(appData);
+    await refresh();
+    return;
+  }
+
   const form = event.target.closest("form[data-action='update-draft-card']");
   if (!form) return;
   event.preventDefault();
@@ -175,13 +206,15 @@ app.addEventListener("click", async (event) => {
   }
 
   if (action === "quick-add") {
-    const title = window.prompt("One thing worth protecting today");
-    if (!title?.trim()) return;
-    const todayKey = toLocalDateKey(nowIso);
-    const targetCardId = buildHomeModel(appData, todayKey).focusCards[0]?.id ?? appData.goalCards.find((card) => card.status === "active")?.id;
-    if (!targetCardId) return;
-    appData = addTodayItem(appData, targetCardId, title, todayKey, nowIso);
-    await repo.save(appData);
+    uiState.quickAddOpen = true;
+    uiState.quickAddError = "";
+    await refresh();
+    return;
+  }
+
+  if (action === "quick-add-cancel") {
+    uiState.quickAddOpen = false;
+    uiState.quickAddError = "";
     await refresh();
     return;
   }
@@ -263,6 +296,7 @@ async function refresh() {
   appData = upsertDailySnapshot(appData, todayKey, homeModel, completedIdsForToday(appData, todayKey));
   await repo.save(appData);
   mountApp(app, toViewModel(homeModel, nowIso, uiState));
+  app.querySelector?.("[data-quick-add-input]")?.focus?.();
 }
 
 function completedIdsForToday(data, todayKey) {
@@ -292,6 +326,12 @@ function shortcutUrlForSlot(slotValue) {
   const slot = Number(slotValue);
   if (!Number.isInteger(slot) || slot < 1) return "";
   return pinnedShortcuts(appData?.shortcuts, 3)[slot - 1]?.url ?? "";
+}
+
+function quickAddTargetCardId(data, todayKey) {
+  return buildHomeModel(data, todayKey).focusCards[0]?.id
+    ?? data.goalCards.find((card) => card.status === "active" && !(card.snoozedUntil && card.snoozedUntil > todayKey))?.id
+    ?? data.goalCards.find((card) => card.status === "active")?.id;
 }
 
 function toggleExpandedCard(cardId) {
