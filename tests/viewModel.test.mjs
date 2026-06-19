@@ -366,6 +366,17 @@ test("styles include ritual safe home and shortcut dock selectors", () => {
   assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
 });
 
+test("styles keep ritual home responsive and motion-safe", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const reducedMotionBlock = css.match(/@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?^}/m)?.[0] ?? "";
+
+  assert.match(reducedMotionBlock, /animation-duration:\s*0\.001ms\s*!important;/);
+  assert.match(reducedMotionBlock, /transition-duration:\s*0\.001ms\s*!important;/);
+  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.safe-stage\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*h1\s*\{[\s\S]*font-size:\s*34px;/);
+});
+
 test("styles include calm reveal workbench selectors", () => {
   const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
   const selectors = [
