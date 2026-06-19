@@ -11,7 +11,7 @@ import { toViewModel } from "./ui/viewModel.js";
 import { mountApp } from "./ui/render.js";
 import { renderNotSetUpHtml, renderSetupHtml } from "./ui/setupRender.js";
 import { toSetupViewModel } from "./ui/setupViewModel.js";
-import { addTodayItem, completeTodayItem, pinCard, snoozeCard } from "./ui/actions.js";
+import { completeTodayItem, pinCard, quickAddTodayItem, snoozeCard } from "./ui/actions.js";
 
 const REVEAL_DURATION_MS = 20_000;
 const app = document.querySelector("#app");
@@ -46,14 +46,12 @@ app.addEventListener("submit", async (event) => {
       return;
     }
 
-    const targetCardId = quickAddTargetCardId(appData, todayKey);
-    if (!targetCardId) return;
-
-    appData = addTodayItem(appData, targetCardId, title, todayKey, nowIso);
+    const result = quickAddTodayItem(appData, quickAddTargetCardId(appData, todayKey), title, todayKey, nowIso);
+    appData = result.data;
     uiState.quickAddOpen = false;
     uiState.quickAddError = "";
     uiState.focusRevealed = true;
-    uiState.expandedCardIds.add(targetCardId);
+    uiState.expandedCardIds.add(result.cardId);
     scheduleRevealHide();
     await repo.save(appData);
     await refresh();

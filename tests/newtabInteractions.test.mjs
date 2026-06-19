@@ -172,6 +172,25 @@ test("new tab quick add uses an inline composer and persists the new item visibl
   assert.match(harness.app.innerHTML, /data-card-expanded="true"/);
 });
 
+test("new tab quick add creates an anchor from the empty complete state", async (t) => {
+  const appData = createEmptyAppData(NOW);
+  appData.setup.completedAt = NOW;
+  const harness = await loadNewtabHarness(appData);
+  t.after(harness.restore);
+
+  await harness.click({ action: "quick-add" });
+  await harness.submit({ action: "quick-add-item" }, { title: "abc" });
+  const saved = harness.latestSavedData();
+
+  assert.equal(saved.goalCards.length, 1);
+  assert.equal(saved.goalCards[0].status, "active");
+  assert.equal(saved.goalCards[0].todayItems[0].title, "abc");
+  assert.match(harness.app.innerHTML, /abc/);
+  assert.match(harness.app.innerHTML, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.match(harness.app.innerHTML, /data-card-expanded="true"/);
+  assert.doesNotMatch(harness.app.innerHTML, /No active anchors/);
+});
+
 
 function countAction(html, action) {
   return (html.match(new RegExp(`data-action="${action}"`, "g")) ?? []).length;

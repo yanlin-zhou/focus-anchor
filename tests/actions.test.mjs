@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createEmptyAppData } from "../src/domain/emptyData.js";
 import { createInitialData } from "../src/domain/sampleData.js";
-import { addTodayItem, completeTodayItem, pinCard, snoozeCard } from "../src/ui/actions.js";
+import { addTodayItem, completeTodayItem, pinCard, quickAddTodayItem, snoozeCard } from "../src/ui/actions.js";
 
 test("completeTodayItem marks item done and records behavior event", () => {
   const data = createInitialData("2026-05-22T09:12:00.000Z");
@@ -59,4 +60,24 @@ test("addTodayItem returns original data for blank titles", () => {
   const next = addTodayItem(data, "card-focus-anchor-mvp", "   ", "2026-05-22", "2026-05-22T10:10:00.000Z");
 
   assert.equal(next, data);
+});
+
+test("quickAddTodayItem creates a default active anchor when no target card exists", () => {
+  const data = createEmptyAppData("2026-05-22T09:12:00.000Z");
+  data.setup.completedAt = "2026-05-22T09:12:00.000Z";
+  const result = quickAddTodayItem(data, null, "Capture the empty-state task", "2026-05-22", "2026-05-22T10:10:00.000Z");
+  const card = result.data.goalCards[0];
+  const item = card.todayItems[0];
+
+  assert.notEqual(result.data, data);
+  assert.equal(result.cardId, card.id);
+  assert.equal(card.title, "Today");
+  assert.equal(card.type, "ad_hoc");
+  assert.equal(card.status, "active");
+  assert.equal(card.pinned, true);
+  assert.equal(item.title, "Capture the empty-state task");
+  assert.equal(item.goalCardId, card.id);
+  assert.equal(item.status, "open");
+  assert.equal(item.source, "manual");
+  assert.equal(result.data.behaviorEvents.at(-1).type, "manual_today_item_created");
 });

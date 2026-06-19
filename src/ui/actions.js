@@ -44,7 +44,7 @@ export function addTodayItem(data, cardId, title, todayKey, nowIso) {
   const trimmedTitle = title.trim();
   if (!trimmedTitle) return data;
 
-  const itemId = `item-manual-${Date.parse(nowIso)}-${slugify(trimmedTitle)}`;
+  const item = createManualTodayItem(cardId, trimmedTitle, todayKey, nowIso);
   let changed = false;
   const goalCards = data.goalCards.map((card) => {
     if (card.id !== cardId) return card;
@@ -52,22 +52,7 @@ export function addTodayItem(data, cardId, title, todayKey, nowIso) {
     return {
       ...card,
       updatedAt: nowIso,
-      todayItems: [
-        ...card.todayItems,
-        {
-          id: itemId,
-          goalCardId: card.id,
-          title: trimmedTitle,
-          status: "open",
-          source: "manual",
-          scheduledFor: todayKey,
-          doneAt: null,
-          skippedAt: null,
-          note: "",
-          createdAt: nowIso,
-          updatedAt: nowIso
-        }
-      ]
+      todayItems: [...card.todayItems, item]
     };
   });
 
@@ -81,10 +66,59 @@ export function addTodayItem(data, cardId, title, todayKey, nowIso) {
       ...data.behaviorEvents,
       createBehaviorEvent("manual_today_item_created", nowIso, {
         goalCardId: cardId,
-        todayItemId: itemId,
+        todayItemId: item.id,
         after: { title: trimmedTitle, scheduledFor: todayKey }
       })
     ]
+  };
+}
+
+export function quickAddTodayItem(data, cardId, title, todayKey, nowIso) {
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) return { data, cardId: null };
+
+  const targetCard = findQuickAddTargetCard(data, cardId, todayKey);
+  if (targetCard) {
+    return {
+      data: addTodayItem(data, targetCard.id, trimmedTitle, todayKey, nowIso),
+      cardId: targetCard.id
+    };
+  }
+
+  const fallbackCardId = `card-quick-add-${Date.parse(nowIso)}-${slugify(trimmedTitle)}`;
+  const item = createManualTodayItem(fallbackCardId, trimmedTitle, todayKey, nowIso);
+  const fallbackCard = {
+    id: fallbackCardId,
+    title: "Today",
+    type: "ad_hoc",
+    importance: 4,
+    status: "active",
+    pinned: true,
+    snoozedUntil: null,
+    sortReason: "",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    completedAt: null,
+    todayItems: [item],
+    links: [],
+    rules: []
+  };
+
+  return {
+    data: {
+      ...data,
+      goalCards: [...data.goalCards, fallbackCard],
+      updatedAt: nowIso,
+      behaviorEvents: [
+        ...data.behaviorEvents,
+        createBehaviorEvent("manual_today_item_created", nowIso, {
+          goalCardId: fallbackCardId,
+          todayItemId: item.id,
+          after: { title: trimmedTitle, scheduledFor: todayKey }
+        })
+      ]
+    },
+    cardId: fallbackCardId
   };
 }
 
@@ -107,6 +141,28 @@ function updateCard(data, cardId, nowIso, eventType, update) {
       createBehaviorEvent(eventType, nowIso, { goalCardId: cardId })
     ]
   };
+}
+
+function createManualTodayItem(cardId, title, todayKey, nowIso) {
+  return {
+    id: `item-manual-${Date.parse(nowIso)}-${slugify(title)}`,
+    goalCardId: cardId,
+    title,
+    status: "open",
+    source: "manual",
+    scheduledFor: todayKey,
+    doneAt: null,
+    skippedAt: null,
+    note: "",
+    createdAt: nowIso,
+    updatedAt: nowIso
+  };
+}
+
+function findQuickAddTargetCard(data, cardId, todayKey) {
+  return data.goalCards.find((card) => card.id === cardId)
+    ?? data.goalCards.find((card) => card.status === "active" && !(card.snoozedUntil && card.snoozedUntil > todayKey))
+    ?? data.goalCards.find((card) => card.status === "active");
 }
 
 function slugify(value) {
