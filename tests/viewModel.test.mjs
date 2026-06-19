@@ -232,18 +232,31 @@ test("safe home renders ritual structure with shortcut dock in the header utilit
   const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
   const html = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
 
-  assert.match(html, /class="safe-home safe-stage"/);
+  assert.match(html, /class="safe-home safe-stage is-focus-hidden"/);
   assert.match(html, /class="safe-summary ritual-summary"/);
   assert.match(html, /class="shortcut-dock"/);
   assert.match(html, /class="shortcut shortcut-tile"/);
   assert.match(html, /class="shortcut-mark" aria-hidden="true">M<\/span>/);
   assert.match(html, /class="shortcut-label">Maps<\/span>/);
   assert.ok(html.indexOf(`class="top-actions"`) < html.indexOf(`class="shortcut-dock"`));
-  assert.ok(html.indexOf(`class="shortcut-dock"`) < html.indexOf(`class="safe-home safe-stage"`));
-  const safeHomeStart = html.indexOf(`class="safe-home safe-stage"`);
+  assert.ok(html.indexOf(`class="shortcut-dock"`) < html.indexOf(`class="safe-home safe-stage is-focus-hidden"`));
+  const safeHomeStart = html.indexOf(`class="safe-home safe-stage is-focus-hidden"`);
   const safeHomeEnd = html.indexOf(`</section>`, safeHomeStart);
   const focusPeekIndex = html.indexOf(`class="focus-peek"`);
   assert.ok(focusPeekIndex > safeHomeStart && focusPeekIndex < safeHomeEnd);
+});
+
+test("safe home marks hidden and revealed composition states", () => {
+  const homeModel = buildHomeModel(createInitialData("2026-05-30T09:12:00.000Z"), "2026-05-30");
+  const hiddenHtml = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z"));
+  const revealedHtml = renderAppHtml(toViewModel(homeModel, "2026-05-30T09:12:00.000Z", {
+    focusRevealed: true
+  }));
+
+  assert.match(hiddenHtml, /class="safe-home safe-stage is-focus-hidden"/);
+  assert.doesNotMatch(hiddenHtml, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.match(revealedHtml, /class="safe-home safe-stage is-focus-revealed"/);
+  assert.doesNotMatch(revealedHtml, /class="safe-home safe-stage is-focus-hidden"/);
 });
 
 test("default safe home does not leak title-derived peek ids", () => {
@@ -368,6 +381,18 @@ test("styles include ritual safe home and shortcut dock selectors", () => {
   assert.match(css, /\.top-actions \.shortcut-dock\s*\{/);
   assert.match(css, /\.safe-stage\s*\{[\s\S]*grid-template-areas:\s*"summary summary"\s*"peek reveal";/);
   assert.doesNotMatch(css, /"peek dock"/);
+});
+
+test("styles optically center the collapsed safe home stage", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(css, /\.page\s*\{[\s\S]*width:\s*min\(1420px, calc\(100vw - 80px\)\);/);
+  assert.match(css, /\.page\s*\{[\s\S]*min-height:\s*100svh;/);
+  assert.match(css, /\.safe-home\.is-focus-hidden\s*\{[\s\S]*margin-top:\s*clamp\(64px, 12vh, 148px\);/);
+  assert.match(css, /\.safe-home\.is-focus-revealed\s*\{[\s\S]*margin-top:\s*30px;/);
+  assert.match(css, /\.safe-stage\s*\{[\s\S]*min-height:\s*clamp\(410px, 42svh, 470px\);/);
+  assert.match(css, /@media \(max-width: 1120px\)[\s\S]*\.safe-home\.is-focus-hidden\s*\{[\s\S]*margin-top:\s*clamp\(44px, 7vh, 76px\);/);
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.safe-home\.is-focus-hidden,\s*\.safe-home\.is-focus-revealed\s*\{[\s\S]*margin-top:\s*26px;/);
 });
 
 test("styles keep ritual home responsive and motion-safe", () => {

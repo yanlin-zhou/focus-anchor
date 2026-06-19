@@ -2,6 +2,7 @@ import { isAllowedLinkUrl } from "../domain/schema.js";
 
 export function renderAppHtml(viewModel) {
   const safeHome = viewModel.safeHome;
+  const safeHomeStateClass = viewModel.focusDrawer.revealed ? "is-focus-revealed" : "is-focus-hidden";
 
   return `
     <header class="topbar">
@@ -16,7 +17,7 @@ export function renderAppHtml(viewModel) {
         <button class="button primary" data-action="quick-add">Quick Add</button>
       </div>
     </header>
-    <section class="safe-home safe-stage" aria-label="Safe Home">
+    <section class="safe-home safe-stage ${safeHomeStateClass}" aria-label="Safe Home">
       <div class="safe-summary ritual-summary">
         <div>
           <div class="summary-label">${escapeHtml(safeHome.privacyLabel)}</div>

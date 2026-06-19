@@ -64,10 +64,10 @@ textarea {
 }
 
 .page {
-  width: min(1480px, calc(100vw - 56px));
-  min-height: 100vh;
+  width: min(1420px, calc(100vw - 80px));
+  min-height: 100svh;
   margin: 0 auto;
-  padding: 28px 0 34px;
+  padding: 36px 0 34px;
 }
 
 .topbar {
@@ -213,8 +213,16 @@ h1 {
   animation: enter 260ms ease both;
 }
 
+.safe-home.is-focus-hidden {
+  margin-top: clamp(64px, 12vh, 148px);
+}
+
+.safe-home.is-focus-revealed {
+  margin-top: 30px;
+}
+
 .safe-stage {
-  min-height: 420px;
+  min-height: clamp(410px, 42svh, 470px);
   border: 1px solid rgba(121, 60, 21, 0.22);
   border-radius: 18px;
   background:
@@ -1575,6 +1583,10 @@ button:disabled {
     padding-top: 20px;
   }
 
+  .safe-home.is-focus-hidden {
+    margin-top: clamp(44px, 7vh, 76px);
+  }
+
   .daily-panel {
     grid-template-columns: 1fr;
   }
@@ -1695,6 +1707,11 @@ button:disabled {
   .safe-home {
     margin-top: 26px;
     padding: 20px 18px;
+  }
+
+  .safe-home.is-focus-hidden,
+  .safe-home.is-focus-revealed {
+    margin-top: 26px;
   }
 
   .top-actions .shortcut-dock {
