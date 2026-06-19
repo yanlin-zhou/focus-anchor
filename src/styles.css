@@ -471,6 +471,10 @@ h1 {
   animation: fadeIn 300ms ease 90ms both;
 }
 
+.top-tasks-head {
+  grid-column: 1 / -1;
+}
+
 .top-task {
   min-height: 124px;
   border: 1px solid rgba(38, 49, 47, 0.12);

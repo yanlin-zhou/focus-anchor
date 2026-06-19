@@ -89,6 +89,7 @@ function renderFocusDrawer(drawer) {
           </div>
         </div>
         <section class="top-tasks" aria-label="Top 3 Today Items">
+          <div class="section-head top-tasks-head"><span>Top 3 Today Items</span><span>Visible after reveal</span></div>
           ${drawer.topTasks.length > 0 ? drawer.topTasks.map(renderTopTask).join("") : renderEmptyTopTasks()}
         </section>
         <section class="focus-lane" aria-label="Focus Lane">

@@ -334,6 +334,7 @@ test("revealed drawer includes sensitive top task details", () => {
   }));
 
   assert.match(html, /Top 3 Today Items/);
+  assert.match(html, /<div class="section-head top-tasks-head"><span>Top 3 Today Items<\/span><span>Visible after reveal<\/span><\/div>/);
   assert.match(html, /Polish narrative and risks section/);
   assert.match(html, /Biweekly report/);
   assert.match(html, /Auto-hide/);
