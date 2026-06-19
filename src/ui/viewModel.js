@@ -5,12 +5,17 @@ export function toViewModel(homeModel, nowIso, uiState = {}) {
   const expandedCardIds = uiState.expandedCardIds ?? new Set();
   const backlogExpanded = Boolean(uiState.backlogExpanded);
   const focusRevealed = Boolean(uiState.focusRevealed);
+  const quickAddOpen = Boolean(uiState.quickAddOpen);
   const readyCount = homeModel.topTodayItems.length;
   const dateCheckCount = homeModel.topTodayItems.filter((item) => item.goalType === "deadline").length
     + homeModel.focusCards.filter((card) => card.type === "deadline").length;
 
   return {
     dateLabel: date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+    quickAdd: {
+      open: quickAddOpen,
+      error: uiState.quickAddError ?? ""
+    },
     safeHome: {
       privacyLabel: "Private by default",
       headline: `${homeModel.focusCards.length} ${homeModel.focusCards.length === 1 ? "anchor" : "anchors"} ready`,

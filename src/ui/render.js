@@ -2,6 +2,7 @@ import { isAllowedLinkUrl } from "../domain/schema.js";
 
 export function renderAppHtml(viewModel) {
   const safeHome = viewModel.safeHome;
+  const quickAdd = viewModel.quickAdd ?? { open: false, error: "" };
   const safeHomeStateClass = viewModel.focusDrawer.revealed ? "is-focus-revealed" : "is-focus-hidden";
 
   return `
@@ -13,10 +14,11 @@ export function renderAppHtml(viewModel) {
         <div class="shortcut-dock" aria-label="Google shortcuts">
           ${safeHome.shortcuts.map(renderShortcut).join("")}
         </div>
-        <button class="button" data-action="open-manage">Manage</button>
-        <button class="button primary" data-action="quick-add">Quick Add</button>
+        <button class="button" type="button" data-action="open-manage">Manage</button>
+        <button class="button primary" type="button" data-action="quick-add" aria-expanded="${quickAdd.open ? "true" : "false"}">Quick Add</button>
       </div>
     </header>
+    ${renderQuickAddComposer(quickAdd)}
     <section class="safe-home safe-stage ${safeHomeStateClass}" aria-label="Safe Home">
       <div class="safe-summary ritual-summary">
         <div>
@@ -55,6 +57,22 @@ function renderRevealToggle(isRevealed) {
   const action = isRevealed ? "hide-focus" : "reveal-focus";
   const label = isRevealed ? "Hide" : "Reveal focus";
   return `<button class="reveal-button" type="button" data-action="${action}" aria-expanded="${isRevealed ? "true" : "false"}">${label}</button>`;
+}
+
+function renderQuickAddComposer(quickAdd) {
+  if (!quickAdd.open) return "";
+
+  return `
+    <form class="quick-add-composer" data-action="quick-add-item" aria-label="Quick Add">
+      <label class="visually-hidden" for="quick-add-title">One thing worth protecting today</label>
+      <input id="quick-add-title" class="quick-add-input" data-quick-add-input name="title" placeholder="One thing worth protecting today" autocomplete="off">
+      <div class="quick-add-actions">
+        <button class="button primary" type="submit">Add</button>
+        <button class="button text" type="button" data-action="quick-add-cancel">Cancel</button>
+      </div>
+      ${quickAdd.error ? `<div class="form-error quick-add-error">${escapeHtml(quickAdd.error)}</div>` : ""}
+    </form>
+  `;
 }
 
 function renderFocusPeek(safeHome) {
