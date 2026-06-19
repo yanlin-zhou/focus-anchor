@@ -344,3 +344,24 @@ test("styles include a deadline goal type tag", () => {
 
   assert.match(css, /\.tag-deadline\s*\{/);
 });
+
+test("styles include ritual safe home and shortcut dock selectors", () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const selectors = [
+    ".safe-stage",
+    ".safe-stage::before",
+    ".safe-stage::after",
+    ".ritual-summary",
+    ".shortcut-dock",
+    ".shortcut-tile",
+    ".shortcut-mark",
+    ".shortcut-label"
+  ];
+
+  for (const selector of selectors) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    assert.match(css, new RegExp(`${escaped}\\s*\\{`));
+  }
+
+  assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.shortcut-dock\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
+});

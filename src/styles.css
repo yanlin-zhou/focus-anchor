@@ -16,6 +16,15 @@
   --deadline: #7b4f8d;
   --shadow: 0 18px 42px rgba(81, 55, 30, 0.12);
   --soft-shadow: 0 10px 26px rgba(81, 55, 30, 0.08);
+  --ink: #17211f;
+  --ink-2: #20322f;
+  --paper: #fffdf7;
+  --paper-soft: #fff8ec;
+  --stage: #ead4ad;
+  --stage-deep: #182a27;
+  --amber: #b85c1f;
+  --amber-2: #793c15;
+  --blue-quiet: #435f98;
 }
 
 * {
@@ -201,14 +210,53 @@ h1 {
 
 .safe-home {
   margin-top: 30px;
-  border: 1px solid #d7bd97;
-  border-radius: 16px;
-  background: var(--panel);
-  box-shadow: var(--soft-shadow);
-  padding: 22px;
-  display: grid;
-  gap: 18px;
   animation: enter 260ms ease both;
+}
+
+.safe-stage {
+  min-height: 420px;
+  border: 1px solid rgba(121, 60, 21, 0.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 76% 22%, rgba(184, 92, 31, 0.26), transparent 26%),
+    linear-gradient(122deg, var(--stage) 0%, #f7ead3 48%, var(--stage-deep) 49%, #203b36 100%);
+  box-shadow: 0 24px 70px rgba(81, 55, 30, 0.14);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 0.52fr);
+  grid-template-areas:
+    "summary summary"
+    "peek dock"
+    "peek reveal";
+  align-items: end;
+  gap: 18px 26px;
+  position: relative;
+  overflow: hidden;
+}
+
+.safe-stage::before {
+  content: "";
+  position: absolute;
+  inset: 16px 16px 16px auto;
+  width: min(38%, 520px);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 247, 0.12), rgba(255, 253, 247, 0)),
+    repeating-linear-gradient(90deg, rgba(255, 253, 247, 0.1) 0 1px, transparent 1px 24px);
+  pointer-events: none;
+}
+
+.safe-stage::after {
+  content: "";
+  position: absolute;
+  right: 9%;
+  top: 24%;
+  width: 104px;
+  height: 104px;
+  border: 1px solid rgba(255, 253, 247, 0.24);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 22px rgba(255, 253, 247, 0.04);
+  pointer-events: none;
 }
 
 .safe-summary {
@@ -218,9 +266,18 @@ h1 {
   gap: 28px;
 }
 
-.shortcut-row {
+.ritual-summary {
+  grid-area: summary;
+  position: relative;
+  z-index: 1;
+}
+
+.shortcut-dock {
+  grid-area: dock;
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -247,12 +304,37 @@ h1 {
 
 .shortcut:hover {
   transform: translateY(-1px);
-  border-color: #c4ad8b;
-  box-shadow: var(--soft-shadow);
+  border-color: rgba(255, 253, 247, 0.72);
+  box-shadow: 0 18px 38px rgba(20, 36, 32, 0.22);
 }
 
-.safe-summary + .shortcut-row {
-  margin-top: 2px;
+.shortcut-tile {
+  min-height: 62px;
+  justify-content: flex-start;
+  gap: 10px;
+  background: rgba(255, 253, 247, 0.94);
+  border-color: rgba(255, 253, 247, 0.34);
+  box-shadow: 0 12px 28px rgba(20, 36, 32, 0.18);
+}
+
+.shortcut-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(184, 92, 31, 0.12);
+  color: var(--amber-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 860;
+  flex: 0 0 auto;
+}
+
+.shortcut-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reveal-button {
@@ -285,6 +367,19 @@ h1 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   animation: fadeIn 300ms ease 90ms both;
+}
+
+.safe-stage .focus-peek {
+  grid-area: peek;
+  margin-top: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.safe-stage .reveal-button {
+  grid-area: reveal;
+  position: relative;
+  z-index: 1;
 }
 
 .focus-peek .section-head {
@@ -1464,12 +1559,22 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .daily-meta {
-    text-align: left;
+  .safe-stage {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "summary"
+      "dock"
+      "reveal"
+      "peek";
   }
 
-  .shortcut-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .safe-stage::before,
+  .safe-stage::after {
+    opacity: 0.55;
+  }
+
+  .daily-meta {
+    text-align: left;
   }
 
   .focus-peek {
@@ -1568,8 +1673,12 @@ button:disabled {
     padding: 20px 18px;
   }
 
-  .shortcut-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .shortcut-dock {
+    grid-template-columns: 1fr;
+  }
+
+  .shortcut-tile {
+    min-height: 54px;
   }
 
   .peek-item {
